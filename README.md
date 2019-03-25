@@ -20,7 +20,9 @@ Fast MSER: img_fast_mser
 
 Requires:
 OpenCV 3.1
-Visual Studio 2012
+
+Visual Studio 2012 (Release configuration, X64 platform)
+
 
 If you have any questions about how to build this project, please tell me in 'Issues'.
 Thank you very much!
