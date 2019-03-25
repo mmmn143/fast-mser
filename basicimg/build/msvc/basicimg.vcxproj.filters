@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\..\include\basicimg.h" />
+    <ClInclude Include="..\..\include\img_helper.h" />
+    <ClInclude Include="..\..\include\img_types.h" />
+    <ClInclude Include="..\..\include\img_auto_threshold_canny.h" />
+    <ClInclude Include="..\..\include\img_canny.h" />
+    <ClInclude Include="..\..\include\img_connected_component.h" />
+    <ClInclude Include="..\..\include\img_edge_result.h" />
+    <ClInclude Include="..\..\include\img_img.h" />
+    <ClInclude Include="..\..\include\img_matting.h" />
+    <ClInclude Include="..\..\include\img_mser_base.h" />
+    <ClInclude Include="..\..\include\img_mser_result.h" />
+    <ClInclude Include="..\..\include\img_opencv3_mser.h" />
+    <ClInclude Include="..\..\include\img_opencv_mser.h" />
+    <ClInclude Include="..\..\include\img_origin_mser.h" />
+    <ClInclude Include="..\..\include\img_stroke_width_transform.h" />
+    <ClInclude Include="..\..\include\img_draw.h" />
+    <ClInclude Include="..\..\include\img_mser_helper.h" />
+    <ClInclude Include="..\..\src\stdafx\stdafx.h" />
+    <ClInclude Include="..\..\include\img_linked_linear_mser.h" />
+    <ClInclude Include="..\..\include\img_idiap_mser.h" />
+    <ClInclude Include="..\..\include\img_vlfeat_mser.h" />
+    <ClInclude Include="..\..\include\img_fast_mser.h" />
+    <ClInclude Include="..\..\include\img_ppms_mser.h" />
+    <ClInclude Include="..\..\include\img_ms_mser.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\img_auto_threshold_canny.cpp" />
+    <ClCompile Include="..\..\src\img_canny.cpp" />
+    <ClCompile Include="..\..\src\img_connected_component.cpp" />
+    <ClCompile Include="..\..\src\img_draw.cpp" />
+    <ClCompile Include="..\..\src\img_draw_win_impl.cpp" />
+    <ClCompile Include="..\..\src\img_helper.cpp" />
+    <ClCompile Include="..\..\src\img_img.cpp" />
+    <ClCompile Include="..\..\src\img_mser_result.cpp" />
+    <ClCompile Include="..\..\src\img_opencv3_mser.cpp" />
+    <ClCompile Include="..\..\src\img_opencv_mser.cpp" />
+    <ClCompile Include="..\..\src\img_origin_mser.cpp" />
+    <ClCompile Include="..\..\src\img_stroke_width_transform.cpp" />
+    <ClCompile Include="..\..\src\img_mser_base.cpp" />
+    <ClCompile Include="..\..\src\img_mser_helper.cpp" />
+    <ClCompile Include="..\..\src\img_linked_linear_mser.cpp" />
+    <ClCompile Include="..\..\src\img_idiap_mser.cpp" />
+    <ClCompile Include="..\..\src\img_vlfeat_mser.cpp" />
+    <ClCompile Include="..\..\src\img_fast_mser.cpp" />
+    <ClCompile Include="..\..\src\img_ppms_mser.cpp" />
+    <ClCompile Include="..\..\src\img_ms_mser.cpp" />
+  </ItemGroup>
+</Project>
