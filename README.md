@@ -1,9 +1,10 @@
 # fast-mser
 
 
-## OpenCV MSER: img_opencv3_mser
+## Algorithms and Codes 
+OpenCV MSER: img_opencv3_mser
 
-## CV-MSER+: img_linked_linear_mser
+CV-MSER+: img_linked_linear_mser
 
 VLFeat MSER: img_vlfeat_mser
 
@@ -15,6 +16,7 @@ PPMS-MSER: img_ppms_mser
 
 Fast MSER: img_fast_mser
 
+## Build
 
 Requires:
 OpenCV 3.1
