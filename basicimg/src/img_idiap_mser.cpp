@@ -1,3 +1,6 @@
+// Please see https://github.com/idiap/mser for its original implementation.
+
+
 #include "stdafx.h"
 #include "img_idiap_mser.h"
 

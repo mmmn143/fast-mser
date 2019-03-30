@@ -1,5 +1,8 @@
+// Please see http://www.vlfeat.org/ for its original implementation.
+
 #include "stdafx.h"
 #include "img_vlfeat_mser.h"
+
 
 /** @brief Maximum value
 

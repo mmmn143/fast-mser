@@ -1,3 +1,5 @@
+// Please see https://github.com/opencv/opencv for its original implementation.
+
 #include "stdafx.h"
 
 #include "img_opencv3_mser.h"

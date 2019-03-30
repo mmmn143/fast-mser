@@ -2249,7 +2249,7 @@ void img_fast_mser::extract_pixel_parallel_4_fast(img_multi_msers& msers, u8 gra
 				cur_mem->m_x = lpt.m_x;
 				cur_mem->m_y = lpt.m_y;
 
-				//lpt.m_ref = (i32)(cur_mem - memory);
+				lpt.m_ref = (i32)(cur_mem - memory);
 				++cur_mem;
 				
 
