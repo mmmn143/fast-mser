@@ -149,8 +149,6 @@ void img_ms_mser::allocate_memory(const mt_mat& img, const img_mask_info<u8>& ma
 }
 
 void img_ms_mser::pre_process_image(const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask) {
-	//sys_timer t(L"pre_process_image");
-	//t.begin();
 	i32 extended_image_width = img.size()[1] + 2;
 	u32* points = m_points;
 	i32 row;
@@ -217,22 +215,10 @@ void img_ms_mser::pre_process_image(const mt_mat& img, const img_mask_info<u8>& 
 		m_heap_start[i] = m_heap_start[i-1] + m_level_size[i-1]+1;
 		m_heap_start[i][0] = 0;
 	}
-
-	//for (i32 i = 0; i < m_point_size; ++i) {
-	//	basiclog_info2(m_points[i]);
-	//}
-
-	//t.end();
 }
 
 void img_ms_mser::build_tree(const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask) {
-	//sys_timer t1(L"t", sys_false);
-	//t1.begin();
-
 	pre_process_image(img, mask, gray_mask);
-
-	//sys_timer timer(L"make_tree");
-	//timer.begin();
 
 #define get_gray(ptr)	((m_mask_mask == 0 || (*ptr & m_mask_mask) == 0) ? (*(m_extended_image + (ptr - m_points)) ^ gray_mask) : 256)
 
@@ -372,23 +358,7 @@ void img_ms_mser::build_tree(const mt_mat& img, const img_mask_info<u8>& mask, u
 	m_er_number = (i32)(regions - startRegion);
 	m_mser_regions_end = regions;
 
-	//t1.end();
-
-	//timer.end();
-
-	//i32 nullParentCount = 0;
-
-	//for (i32 i = 0; i < erCount; ++i) {
-	//	i32 m_size = startRegion[i].m_size;
-	//	if (NULL == startRegion[i].m_parent)	{
-	//		++nullParentCount;
-	//	} 
-	//}
-
-	//BASICML_ASSERT(1 == nullParentCount);
-	//BASICML_ASSERT(erCount == region - startRegion);
-
-	//basiclog_info2(sys_strcombine()<<L"er number "<<erCount << L" region number " << (regions - startRegion) << L" mser number " << mser_number);
+	basiclog_info2(sys_strcombine()<<L"er number "<<erCount << L" region number " << (regions - startRegion) << L" mser number " << mser_number);
 }
 
 void img_ms_mser::init_comp(connected_comp* comptr, mser_region*& region) {
@@ -416,17 +386,10 @@ void img_ms_mser::new_region(connected_comp* comptr, mser_region*& region) {
 }
 
 void img_ms_mser::recognize_mser() {
-	//determine_invalid_with_parent_child_cache();
 	recognize_mser_normal();
 }
 
 void img_ms_mser::recognize_mser_normal() {
-	//sys_timer time(L"determine_invalid");
-	//time.begin();
-
-	//sys_timer variance_t(L"calculate variance and nms");
-	//variance_t.begin();
-
 	memset(m_region_level_size, 0, sizeof(u32) * 257);
 
 	i32 totalUnkonwSize = 0;
@@ -461,30 +424,6 @@ void img_ms_mser::recognize_mser_normal() {
 
 	i32 beforeUnkonwSize = totalUnkonwSize;
 
-	//random image, this is faster, for 10M image, it cost 1063, while the following cost 1160
-	/*if (m_delta > 0 && m_nms_similarity >= 0) {
-	for (u32 i = 0; i < m_er_number; ++i) {
-	mser_region* cur_region = &m_mser_regions[i];
-	mser_region* parentRegion = cur_region->m_parent;
-	if (cur_region->m_var > 0 && parentRegion != NULL && parentRegion->m_var > 0) {
-	double subValue = parentRegion->m_var - cur_region->m_var;
-	if (subValue > m_nms_similarity) {
-	if (mser_region::Flag_Invalid != parentRegion->m_region_flag) {
-	parentRegion->m_region_flag = mser_region::Flag_Invalid;
-	--m_region_level_size[parentRegion->m_gray_level];
-	--totalUnkonwSize;
-	}
-	} else if (-subValue > m_nms_similarity) {
-	if (mser_region::Flag_Invalid != cur_region->m_region_flag) {
-	cur_region->m_region_flag = mser_region::Flag_Invalid;
-	--m_region_level_size[cur_region->m_gray_level];
-	--totalUnkonwSize;
-	}
-	} 
-	}
-	}
-	}*/
-
 	//real image, this is faster, for 10M image, this cost 96, while previous costs 149
 	if (m_delta > 0 && m_nms_similarity >= 0) {
 		for (u32 i = 0; i < m_er_number; ++i) {
@@ -516,14 +455,11 @@ void img_ms_mser::recognize_mser_normal() {
 	}
 
 	nmsCount = beforeUnkonwSize - totalUnkonwSize;
-	//variance_t.end();
 
 	basiclog_info2(sys_strcombine()<<L"bad_variance_number "<<bad_variance_number);
 	basiclog_info2(sys_strcombine()<<L"nms count "<<nmsCount);
 
 	remove_duplicated();	
-
-	//time.end();
 }
 
 
@@ -637,9 +573,6 @@ void img_ms_mser::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
 	if (m_gray_order_region_size <= 0) {
 		return;
 	}
-
-	//sys_timer total(L"collect_mser_point");
-	//total.begin();
 
 	vector<img_mser>& t_msers = msers.m_msers[(gray_mask == 0) ? 0 : 1];
 	i32& region_memory_size = msers.m_memory_size[(gray_mask == 0) ? 0 : 1];
@@ -910,52 +843,6 @@ void img_ms_mser::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
 			}
 		}
 	}
-
-	//total.end();
-
-	/*vector<i32> stack_healper;
-	stack_healper.reserve(1000);
-
-
-	for (i32 i = 0; i < (i32)t_msers.size(); ++i) {
-	img_mser& cur_mser = t_msers[i];
-
-	sys_strcombine s;
-	s<<L"gray "<<cur_mser.m_gray_level<<L", size "<<cur_mser.m_size<<L", rect "<<cur_mser.m_rect<<L", pts ";
-
-	stack_healper.push_back(0);
-
-	while (!stack_healper.empty()) {
-	i32 mser_index = stack_healper.back();
-	stack_healper.pop_back();
-
-	img_mser* mser = &cur_mser + mser_index;
-
-	if (mser->m_memory_type == img_mser::Memory_Type_Share) {
-	mt_point* pt = mser->m_points;
-	mt_point* end = pt + mser->m_size;
-	while (pt != end) {
-	s<<pt->m_x<<L","<<pt->m_y<<L";";
-	++pt;
-	}
-	} else {
-	mt_point* pt = mser->m_points + 1;
-	mt_point* end = pt + mser->m_points[0].m_x;
-	while (pt != end) {
-	s<<pt->m_x<<L","<<pt->m_y<<L";";
-	++pt;
-	}
-
-	i32* child_info = (i32*)end;
-
-	for (i32 k = 0; k < mser->m_points[0].m_y; ++k) {
-	stack_healper.push_back((i32)(child_info[k] + mser - &cur_mser));
-	}
-	}
-	}
-
-	basiclog_info2(s);
-	}*/
 }
 
 void img_ms_mser::get_duplicated_regions(vector<mser_region*>& duplicatedRegions, mser_region* stableRegion, mser_region* beginRegion) {

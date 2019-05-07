@@ -135,7 +135,7 @@ namespace basicimg {
 
 		void merge_tree_parallel_4_step(u8 merged_flag);
 
-		void merge(mser_region* a, mser_region* b);
+		void connect(mser_region* a, mser_region* b);
 
 		/** Determine msers
 		*/
@@ -145,7 +145,6 @@ namespace basicimg {
 		void recognize_mser_parallel_4();
 		void recognize_mser_parallel_4_normal();
 		void recognize_mser_parallel_4_parallel();
-		void recognize_mser_parallel_4_parallel2();
 		
 		void extract_pixel(img_multi_msers& msers, u8 gray_mask);
 		void extract_pixel_parallel_4(img_multi_msers& msers, u8 gray_mask);

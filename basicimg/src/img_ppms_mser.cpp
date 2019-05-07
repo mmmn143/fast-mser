@@ -462,29 +462,9 @@ void img_ppms_mser::new_region(connected_comp* comptr, mser_region*& region, u8 
 }
 
 void img_ppms_mser::merge_tree_parallel_4() {
-	//sys_timer t(L"merge_tree_parallel_4");
-	//t.begin();
-
 	merge_tree_parallel_4_step(1);
 	merge_tree_parallel_4_step(2);
 	merge_tree_parallel_4_step(3);
-
-	//t.end();
-
-	//basiclog_info2(sys_strcombine()<<L"merged er number: "<<m_merged_number);
-
-	//for (i32 i = 0; i < 4; ++i) {
-	//	for (i32 j = 0; j < m_pinfo[i].m_er_number; ++j) {
-	//		mser_region& region = m_pinfo[i].m_mser_regions[j];
-
-	//		if (region.m_region_flag == mser_region::Flag_Merged) {
-	//			continue;
-	//		}
-
-	//		sys_strcombine s = sys_strcombine()<<L"gray: "<<region.m_gray_level<<L" size:"<<region.m_size;
-	//		basiclog_info2(s);
-	//	}
-	//}
 }
 
 void img_ppms_mser::merge_tree_parallel_4_step(u8 merged_flag) {
@@ -514,7 +494,7 @@ void img_ppms_mser::merge_tree_parallel_4_step(u8 merged_flag) {
 			get_real_for_merged(a);
 			get_real_for_merged(b);
 			
-			merge(a, b);
+			connect(a, b);
 
 			left_link_points += left_step;
 			right_link_points += right_step;
@@ -552,7 +532,7 @@ void img_ppms_mser::merge_tree_parallel_4_step(u8 merged_flag) {
 				get_real_for_merged(a);
 				get_real_for_merged(b);
 
-				merge(a, b);
+				connect(a, b);
 
 				top_link_points += top_step;
 				bottom_link_points += bottom_step;
@@ -561,7 +541,7 @@ void img_ppms_mser::merge_tree_parallel_4_step(u8 merged_flag) {
 	}
 }
 
-void img_ppms_mser::merge(mser_region* bigger, mser_region* smaller) {
+void img_ppms_mser::connect(mser_region* bigger, mser_region* smaller) {
 	b8 first = sys_true;
 
 	mser_region* swap_temp;
@@ -582,9 +562,6 @@ void img_ppms_mser::merge(mser_region* bigger, mser_region* smaller) {
 		}
 
 		get_set_real_parent_for_merged(smaller, smaller_parent);
-
-		//bigger_parent = bigger->m_parent;
-		//smaller_parent = smaller->m_parent;
 
 		if (smaller_parent != NULL && smaller_parent->m_gray_level < bigger->m_gray_level) {
 			smaller->m_size += pixel_size;
@@ -620,14 +597,10 @@ void img_ppms_mser::recognize_mser() {
 
 void img_ppms_mser::recognize_mser_parallel_4() {
 	//determine_mser_parallel_4_normal(from_min);
-	//determine_mser_parallel_4_with_parent_child_cache(from_min);
 	recognize_mser_parallel_4_parallel();
 }
 
 void img_ppms_mser::recognize_mser_parallel_4_normal() {
-	//sys_timer time(L"determine_mser_parallel_4");
-	//time.begin();
-
 	u32 totalUnkonwSize = 0;
 	u32 nmsCount = 0;
 
@@ -691,9 +664,6 @@ void img_ppms_mser::recognize_mser_parallel_4_normal() {
 			end_region = m_pinfo[i].m_mser_regions_end;
 
 			for (; cur_region != end_region; ++cur_region) {
-				//if (cur_region->m_parent == NULL) {
-				//	basiclog_info2(L"");
-				//}
 
 				if (cur_region->m_region_flag == mser_region::Flag_Merged) {
 					continue;
@@ -808,18 +778,9 @@ void img_ppms_mser::recognize_mser_parallel_4_normal() {
 	basiclog_assert2(index == validCount);
 
 	basiclog_info2(sys_strcombine()<<L"m_gray_order_region_size: "<<m_gray_order_region_size);
-
-	//time.end();
 }
 
 void img_ppms_mser::recognize_mser_parallel_4_parallel() {
-	//sys_timer time(L"determine_mser_parallel_4");
-
-	//time.begin();
-
-	sys_timer variance_t(L"calculate variance and nms");
-	variance_t.begin();
-
 	u32 totalUnkonwSize = 0;
 	i32 bad_variance_number = 0;
 
@@ -835,7 +796,6 @@ void img_ppms_mser::recognize_mser_parallel_4_parallel() {
 		mser_region* cur_region = begin_region;
 		mser_region* end_region = m_pinfo[i].m_mser_regions_end;
 		u32 gray_level_threshold;
-		//total_er_number += m_pinfo[i].m_er_number;
 
 		for (; cur_region != end_region; ++cur_region) {
 			
@@ -875,12 +835,6 @@ void img_ppms_mser::recognize_mser_parallel_4_parallel() {
 			}
 		}
 	}
-
-	variance_t.end();
-	//basiclog_info2(sys_strcombine()<<L"bad_variance_number "<<bad_variance_number);
-
-	sys_timer nms(L"nms");
-	nms.begin();
 
 	mser_region* cur_region;
 	mser_region* end_region;
@@ -935,98 +889,6 @@ void img_ppms_mser::recognize_mser_parallel_4_parallel() {
 		}
 	}
 
-	nms.end();
-
-	//basiclog_info2(sys_strcombine()<<L"nms_count "<<nms_count);
-
-	//i32 testN = 0;
-
-	//for (i32 i = 0; i < 4; ++i) {
-
-	//	cur_region = m_pinfo[i].m_mser_regions;
-	//	end_region = m_pinfo[i].m_mser_regions_end;
-	//	total_er_number += m_pinfo[i].m_er_number;
-
-	//	for (; cur_region != end_region; ++cur_region) {
-	//		if (cur_region->m_region_flag == mser_region::Flag_Unknow) {
-	//			++testN;
-
-	//			basiclog_assert2(cur_region->m_calculated_var == 1);
-
-	//			//basiclog_info2(sys_strcombine()<<L"unknown "<<cur_region->m_patch_index<<L" "<<cur_region->m_gray_level);
-	//		}
-	//	}
-	//}
-
-
-	//basiclog_assert2(testN == totalUnkonwSize);	//3998 correct
-
-	//for (i32 i = 0; i < 4; ++i) {
-
-	//	cur_region = m_pinfo[i].m_mser_regions;
-	//	end_region = m_pinfo[i].m_mser_regions_end;
-
-	//	for (; cur_region != end_region; ++cur_region) {
-	//		if (cur_region->m_region_flag == mser_region::Flag_Unknow) {
-	//			basiclog_assert2(cur_region->m_checked == 1);
-	//		}
-	//	}
-	//}
-
-
-	//variance_t.end();
-
-	//basiclog_info2(sys_strcombine()<<L"bad_variance_number "<<bad_variance_number);
-	//sys_timer nms_t(L"nms");
-	//nms_t.begin();
-
-	//i32 beforeUnkonwSize = totalUnkonwSize;
-
-	//if (m_delta > 0 && m_nms_similarity >= 0) {
-	//	for (i32 i = 0; i < 4; ++i) {
-
-	//		cur_region = m_pinfo[i].m_mser_regions;
-	//		end_region = m_pinfo[i].m_mser_regions_end;
-
-	//		for (; cur_region != end_region; ++cur_region) {
-	//			//if (cur_region->m_parent == NULL) {
-	//			//	basiclog_info2(L"");
-	//			//}
-
-	//			if (cur_region->m_region_flag == mser_region::Flag_Merged) {
-	//				continue;
-	//			}
-
-	//			parent_region = cur_region->m_parent;
-	//			//basiclog_assert2(parent_region == NULL || parent_region->m_region_flag != mser_region::Flag_Merged);
-	//			if (cur_region->m_var > 0 && parent_region != NULL && parent_region->m_var > 0) {
-	//				double subValue = parent_region->m_var - cur_region->m_var;
-	//				if (subValue > m_nms_similarity) {
-	//					if (mser_region::Flag_Invalid != parent_region->m_region_flag) {
-	//						parent_region->m_region_flag = mser_region::Flag_Invalid;
-	//						--level_size[parent_region->m_gray_level];
-	//						--totalUnkonwSize;
-	//					}
-	//				} else if (-subValue > m_nms_similarity) {
-	//					if (mser_region::Flag_Invalid != cur_region->m_region_flag) {
-	//						cur_region->m_region_flag = mser_region::Flag_Invalid;
-	//						--level_size[cur_region->m_gray_level];
-	//						--totalUnkonwSize;
-	//					}
-	//				} 
-	//			}
-	//		}
-	//	}
-	//}
-
-	//nms_t.end();
-
-	//nms_count = beforeUnkonwSize - totalUnkonwSize;
-	//basiclog_info2(sys_strcombine()<<L"nms count "<<nms_count);
-
-	sys_timer init_order_regions_t(L"init_order_regions");
-	init_order_regions_t.begin();
-
 	//order mser region
 	mt_helper::integral_array<u32>(m_start_indexes, m_region_level_size, m_region_level_size + 256);
 
@@ -1064,8 +926,6 @@ void img_ppms_mser::recognize_mser_parallel_4_parallel() {
 			}
 		}
 	}
-
-	init_order_regions_t.end();
 
 	sys_timer duplicated_t(L"duplicated");
 	duplicated_t.begin();
@@ -1124,302 +984,6 @@ void img_ppms_mser::recognize_mser_parallel_4_parallel() {
 	}
 
 	basiclog_info2(sys_strcombine()<<L"m_gray_order_region_size: "<<m_gray_order_region_size);
-
-	duplicated_t.end();
-
-	//time.end();
-}
-
-void img_ppms_mser::recognize_mser_parallel_4_parallel2() {
-	//sys_timer time(L"determine_mser_parallel_4");
-
-	//time.begin();
-
-	//sys_timer variance_t(L"calculate variance and nms");
-	//variance_t.begin();
-
-	i32 bad_variance_number = 0;
-
-	i32 tn = 0;
-	i32 nms_count = 0;
-
-	u32 global_region_level_sizes[4][257];
-	u32** raw_heap_start[4] = {m_pinfo[0].m_heap, m_pinfo[1].m_heap, m_pinfo[2].m_heap, m_pinfo[3].m_heap};
-
-#pragma omp parallel for num_threads(4)
-	for (i32 i = 0; i < 4; ++i) {
-		mser_region* parent_region;
-		mser_region* start_region;
-		mser_region* temp_region;
-		mser_region* begin_region = m_pinfo[i].m_mser_regions;
-		mser_region* cur_region = begin_region;
-		mser_region* end_region = m_pinfo[i].m_mser_regions_end;
-		u32 gray_level_threshold;
-
-
-		mser_region** heap_regions = (mser_region**)m_pinfo[i].m_heap;
-		u32 region_level_size[257];
-		memset(region_level_size, 0, sizeof(u32) * 257);
-
-		//total_er_number += m_pinfo[i].m_er_number;
-
-		for (; cur_region != end_region; ++cur_region) {
-
-			if (cur_region->m_region_flag != mser_region::Flag_Merged) {
-				basiclog_assert2(cur_region->m_calculated_var == 0);
-
-				gray_level_threshold = cur_region->m_gray_level + m_delta;
-				start_region = cur_region;
-				get_set_real_parent_for_merged(start_region, parent_region);
-
-				while (parent_region != NULL && parent_region->m_gray_level <= gray_level_threshold) {
-					basiclog_assert2(parent_region->m_region_flag != mser_region::Flag_Merged);
-
-					start_region = parent_region;
-					if (parent_region >= begin_region && parent_region < end_region) {
-						get_set_real_parent_for_merged(parent_region, temp_region);
-					} else {
-						get_real_parent_for_merged(parent_region, temp_region);
-					}
-
-					parent_region = temp_region;
-				}
-
-				if (parent_region != NULL || start_region->m_gray_level == gray_level_threshold) {
-					cur_region->m_var = (start_region->m_size - cur_region->m_size) / (f32)cur_region->m_size;
-				} else {
-					cur_region->m_var = -1;
-				}
-
-				if (cur_region->m_var > m_stable_variation) {
-					cur_region->m_region_flag = mser_region::Flag_Invalid;
-					//bad_variance_number++;
-				} else if (cur_region->m_size < m_min_point || cur_region->m_size > m_max_point || NULL == cur_region->m_parent) {
-					cur_region->m_region_flag = mser_region::Flag_Invalid;
-				}
-			} else {
-			}
-		}
-
-		for (cur_region = begin_region; cur_region != end_region; ++cur_region) {
-			if (cur_region->m_region_flag == mser_region::Flag_Merged) {
-				continue;
-			}
-
-			parent_region = cur_region->m_parent;
-
-			if (cur_region->m_region_flag == mser_region::Flag_Unknow) {
-				basiclog_assert2(cur_region->m_calculated_var == 0);
-				region_level_size[cur_region->m_gray_level]++;
-				cur_region->m_calculated_var = 1;
-			} else if (parent_region == NULL || parent_region->m_size < m_min_point || parent_region->m_size > m_max_point || NULL == parent_region->m_parent) {
-				continue;
-			}
-			
-			basiclog_assert2(parent_region->m_region_flag != mser_region::Flag_Merged);
-
-			// if parent is in other block, and it needs to nms
-			if (parent_region < begin_region || parent_region >= end_region) {
-
-				if (parent_region->m_gray_level == cur_region->m_gray_level + 1) {
-					*heap_regions++ = cur_region;
-				}
-
-				continue;
-			}
-
-			if (m_nms_similarity < 0 || cur_region->m_var < 0) {
-				continue;
-			}
-
-			if (parent_region->m_var >= 0 && parent_region->m_gray_level == cur_region->m_gray_level + 1) {
-				double subValue = parent_region->m_var - cur_region->m_var;
-				if (subValue > m_nms_similarity) {
-					if (mser_region::Flag_Unknow == parent_region->m_region_flag) {
-						if (parent_region->m_calculated_var == 1) {
-							--region_level_size[parent_region->m_gray_level];
-						}
-
-						parent_region->m_region_flag = mser_region::Flag_Invalid;
-					}
-				} else if (-subValue > m_nms_similarity) {
-					if (mser_region::Flag_Unknow == cur_region->m_region_flag) {
-						if (cur_region->m_calculated_var == 1) {
-							--region_level_size[cur_region->m_gray_level];
-						}
-
-						cur_region->m_region_flag = mser_region::Flag_Invalid;
-					}
-				} 
-			}
-		}
-
-		m_pinfo[i].m_heap = (u32**)heap_regions;
-
-		u32* rls = global_region_level_sizes[i];
-
-		for (i32 k = 0; k < 257; ++k) {
-			rls[k] = region_level_size[k];
-		}
-	}
-
-	for (i32 i = 0; i < 257; ++i) {
-		m_region_level_size[i] = global_region_level_sizes[0][i] + global_region_level_sizes[1][i] + global_region_level_sizes[2][i] + global_region_level_sizes[3][i];
-	}
-
-	mser_region* cur_region;
-	mser_region* end_region;
-	mser_region* parent_region;
-
-	if (m_nms_similarity >= 0) {
-		for (i32 i = 0; i < 4; ++i) {
-			mser_region** heap_region_end = (mser_region**)m_pinfo[i].m_heap;
-			mser_region** head_region_start = (mser_region**)raw_heap_start[i];
-
-			i32 number = (i32)(heap_region_end - head_region_start);
-
-			i32 cnt = 0;
-
-			for (mser_region** cur = head_region_start; cur < heap_region_end; ++cur) {
-				cur_region = *cur;
-				parent_region = cur_region->m_parent;
-
-				if (cur_region->m_region_flag == mser_region::Flag_Invalid && parent_region->m_region_flag == mser_region::Flag_Invalid) {
-					continue;
-				}
-
-				++cnt;
-
-				if (parent_region->m_var >= 0) {
-					double subValue = parent_region->m_var - cur_region->m_var;
-					if (subValue > m_nms_similarity) {
-						if (mser_region::Flag_Unknow == parent_region->m_region_flag) {
-							if (parent_region->m_calculated_var == 1) {
-								--m_region_level_size[parent_region->m_gray_level];
-							}
-
-							parent_region->m_region_flag = mser_region::Flag_Invalid;
-						}
-					} else if (-subValue > m_nms_similarity) {
-						if (mser_region::Flag_Unknow == cur_region->m_region_flag) {
-							if (cur_region->m_calculated_var == 1) {
-								--m_region_level_size[cur_region->m_gray_level];
-							}
-
-							cur_region->m_region_flag = mser_region::Flag_Invalid;
-						}
-					} 
-				}
-
-			}
-
-			m_pinfo[i].m_heap = raw_heap_start[i];
-		}
-	}
-
-	//basiclog_info2(sys_strcombine()<<L"bad_variance_number "<<bad_variance_number);
-
-	//sys_timer nms(L"nms");
-	//nms.begin();
-
-	//order mser region
-	mt_helper::integral_array<u32>(m_start_indexes, m_region_level_size, m_region_level_size + 256);
-
-	m_gray_order_region_size = m_start_indexes[256];
-
-	if (m_gray_order_regions_memory_size > m_gray_order_region_size * 5) {
-		++m_exceed_times;
-
-		if (m_exceed_times > 10) {
-			m_gray_order_regions_memory_size = m_gray_order_region_size;
-			free(m_gray_order_regions);
-			m_gray_order_regions = (mser_region**)malloc(sizeof(mser_region*) * m_gray_order_regions_memory_size);
-		}
-	} else {
-		m_exceed_times = 0;
-		m_gray_order_regions_memory_size = m_gray_order_region_size;
-
-		if (m_gray_order_regions != NULL) {
-			free(m_gray_order_regions);
-		}
-
-		m_gray_order_regions = (mser_region**)malloc(sizeof(mser_region*) * m_gray_order_regions_memory_size);
-	}
-
-	for (i32 i = 0; i < 4; ++i) {
-		cur_region = m_pinfo[i].m_mser_regions;
-		end_region = m_pinfo[i].m_mser_regions_end;
-
-		for (; cur_region != end_region; ++cur_region) {
-			if (cur_region->m_region_flag == mser_region::Flag_Unknow) {
-				m_gray_order_regions[m_start_indexes[cur_region->m_gray_level]++] = cur_region;
-			}
-		}
-	}
-
-	//init_order_regions_t.end();
-
-	sys_timer duplicated_t(L"duplicated");
-	duplicated_t.begin();
-
-	if (m_duplicated_variation > 0) {
-		u32 validCount = 0;
-
-		m_remove_duplicated_memory_helper.reserve(100);
-
-		//ШЅжи
-		for (u32 i = 0; i < m_gray_order_region_size; ++i) {
-			cur_region = m_gray_order_regions[i];
-
-			if (cur_region->m_region_flag != mser_region::Flag_Unknow) {
-				continue;
-			}
-
-			m_remove_duplicated_memory_helper.clear();
-			m_remove_duplicated_memory_helper.push_back(cur_region);
-			get_duplicated_regions(m_remove_duplicated_memory_helper, cur_region, cur_region);
-
-			i32 middleIndex = (i32)m_remove_duplicated_memory_helper.size() / 2;
-
-			if (middleIndex > 0) {
-				i32 oldSize = (i32)m_remove_duplicated_memory_helper.size();
-				get_duplicated_regions(m_remove_duplicated_memory_helper, m_remove_duplicated_memory_helper[middleIndex], m_remove_duplicated_memory_helper.back());
-			}
-
-			for (i32 j = 0; j < (i32)m_remove_duplicated_memory_helper.size(); ++j) {
-				if (j != middleIndex) {
-					m_remove_duplicated_memory_helper[j]->m_region_flag = mser_region::Flag_Invalid;
-				} else {
-					m_remove_duplicated_memory_helper[j]->m_region_flag = mser_region::Flag_Valid;
-					++validCount;
-				}
-			}
-		}
-
-		u32 index = 0;
-		m_channel_total_pixel_number = 0;
-		for (u32 i = 0; i < m_gray_order_region_size; ++i) {
-			if (m_gray_order_regions[i]->m_region_flag == mser_region::Flag_Valid) {
-				m_channel_total_pixel_number += m_gray_order_regions[i]->m_size;
-				m_gray_order_regions[index++] = m_gray_order_regions[i];
-			}
-		}
-
-		m_gray_order_region_size = validCount;
-		basiclog_assert2(index == validCount);
-	} else {
-		m_channel_total_pixel_number = 0;
-		for (u32 i = 0; i < m_gray_order_region_size; ++i) {
-			m_channel_total_pixel_number += m_gray_order_regions[i]->m_size;
-			m_gray_order_regions[i]->m_region_flag = mser_region::Flag_Valid;
-		}
-	}
-
-	basiclog_info2(sys_strcombine()<<L"m_gray_order_region_size: "<<m_gray_order_region_size);
-
-	duplicated_t.end();
-
-	//time.end();
 }
 
 void img_ppms_mser::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
@@ -1736,12 +1300,6 @@ void img_ppms_mser::extract_pixel_parallel_4_serial_impl(img_multi_msers& msers,
 }
 
 void img_ppms_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& msers, u8 gray_mask) {
-	//sys_timer total(L"collect_mser_parallel_4_repeat_impl_2");
-	//total.begin();
-
-	sys_timer t3(L"a", sys_false);
-	t3.begin();
-
 	//total block self pixel size, mser block self pixel size, self rect,
 	i32 one_block_mser_info_size = m_gray_order_region_size * 3 + 1;
 	i32 total_block_mser_info_size = one_block_mser_info_size * 4;
@@ -1851,8 +1409,6 @@ void img_ppms_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& mser
 		i16 top, left, bottom, right;
 	};
 	
-	//sys_timer t(L"mser_block_size");
-	//t.begin();
 	
 	#pragma omp parallel for num_threads(4)
 	for (i32 i = 0; i < 4; ++i) {
@@ -1884,12 +1440,6 @@ void img_ppms_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& mser
 
 		mser_block_indexes[one_block_mser_info_size * i] = cur_memory_size;
 	}
-
-	//t.end();
-
-
-	//sys_timer set_memory(L"set_memory");
-	//set_memory.begin();
 
 	i32 self_memory_size_index[4] = {0, 0, 0, 0};
 	self_memory_size_index[1] = one_block_mser_info_size;
@@ -1986,19 +1536,6 @@ void img_ppms_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& mser
 		mser_block_info_pointer[3] += 1;
 	}
 
-	//basiclog_info2(sys_strcombine()<<block_memory_start_indexes[0]<<L" "<<block_memory_start_indexes[1]<<L" "<<block_memory_start_indexes[2]<<L" "<<block_memory_start_indexes[3]);
-
-	//basiclog_info2(L"memory info");
-
-	//for (i32 i = 0; i < region_memory_size; ++i) {
-	//	basiclog_info2(sys_strcombine()<<memory[i].m_x << L", "<<memory[i].m_y);
-	//}
-
-	//set_memory.end();
-
-	//sys_timer extract_pixel(L"extract_pixel");
-	//extract_pixel.begin();
-
 #pragma omp parallel for num_threads(4)
 	for (i32 i = 0; i < 4; ++i) {
 		mt_point* pt;
@@ -2049,24 +1586,12 @@ void img_ppms_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& mser
 		}
 	}
 
-	
-	
-
-	//extract_pixel.end();
-
-	//sys_timer extract_global(L"extract_global");
-	//extract_global.begin();
 
 	mser_block_info_pointer[0] = (mser_block_info*)(mser_block_indexes + self_memory_size_index[0] + 1);
 	mser_block_info_pointer[1] = (mser_block_info*)(mser_block_indexes + self_memory_size_index[1] + 1);
 	mser_block_info_pointer[2] = (mser_block_info*)(mser_block_indexes + self_memory_size_index[2] + 1);
 	mser_block_info_pointer[3] = (mser_block_info*)(mser_block_indexes + self_memory_size_index[3] + 1);
 
-	//basiclog_info2(L"memory info");
-
-	//for (i32 i = 0; i < region_memory_size; ++i) {
-	//	basiclog_info2(sys_strcombine()<<memory[i].m_x << L", "<<memory[i].m_y);
-	//}
 
 	//extract global
 	i32 block_self_pixel_size;
@@ -2142,49 +1667,6 @@ void img_ppms_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& mser
 			}
 		}
 
-		/*if (cur_mser.m_memory_type == img_mser::Memory_Type_Share_Parallel_4) {
-		cur_mser.m_points[0].m_y -= cur_region->m_child_pixel_size;
-		}
-
-
-		left = -1;
-
-		for (i32 k = 0; k < 4; ++k) {
-		mt_point* begin = cur_mser.m_points[k].m_x + memory;
-		mt_point* end = cur_mser.m_points[k].m_y + memory;
-
-		if (begin == end) {
-		continue;
-		}
-
-		i32 start_index = 0;
-		if (left == -1) {
-		left = begin->m_x;
-		right = begin->m_x;
-		top = begin->m_y;
-		bottom = begin->m_y;
-		start_index = 1;
-		}
-
-		for (mt_point* pt = begin + start_index; pt < end; ++pt) {
-		if (pt->m_x > right) {
-		right = pt->m_x;
-		} else if (pt->m_x < left) {
-		left = pt->m_x;
-		}
-
-		if (pt->m_y > bottom) {
-		bottom = pt->m_y;
-		} else if (pt->m_y < top) {
-		top = pt->m_y;
-		}
-		}
-		}
-
-		if (cur_mser.m_memory_type == img_mser::Memory_Type_Share_Parallel_4) {
-		cur_mser.m_points[0].m_y += cur_region->m_child_pixel_size;
-		}*/
-
 		temp_rect.set_rect(left, top, right - left + 1, bottom - top + 1);
 		cur_mser.m_rect.adjust_by_append_rect(temp_rect);
 
@@ -2207,86 +1689,9 @@ void img_ppms_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& mser
 		mser_block_info_pointer[3] += 1;
 	}
 
-	//extract_global.end();
-
 	if (free_memory_size < total_block_mser_info_size) {
 		free(mser_block_indexes);
 	}
-
-	t3.end();
-
-	//total.end();
-
-	//vector<i32> stack_healper;
-	//stack_healper.reserve(1000);
-
-	//for (i32 i = 0; i < (i32)t_msers.size(); ++i) {
-	//	img_mser& cur_mser = t_msers[i];
-
-	//	sys_strcombine s;
-	//	s<<L"gray "<<cur_mser.m_gray_level<<L", size "<<cur_mser.m_size<<L", rect "<<cur_mser.m_rect<<L", pts ";
-
-	//	stack_healper.push_back(0);
-
-	//	while (!stack_healper.empty()) {
-	//		i32 mser_index = stack_healper.back();
-	//		stack_healper.pop_back();
-
-	//		img_mser* mser = &cur_mser + mser_index;
-
-	//		if (mser->m_memory_type == img_mser::Memory_Type_Share_Parallel_4) {
-	//			i32 total_pixel_size = 0;
-
-	//			for (i32 k = 0; k < 4; ++k) {
-	//				mt_point* begin = mser->m_points[k].m_x + mser->m_points;
-	//				mt_point* end = mser->m_points[k].m_y + mser->m_points;
-
-	//				if (begin == end) {
-	//					continue;
-	//				}
-
-	//				for (mt_point* pt = begin; pt < end; ++pt) {
-	//					s<<pt->m_x<<L","<<pt->m_y<<L";";
-	//					total_pixel_size += 1;
-	//				}
-	//			}
-
-	//			//mt_point* child_pixel = mser->m_points + 4 + ();
-
-	//			//while (total_pixel_size < cur_mser.m_size) {
-	//			//	s<<child_pixel->m_x<<L","<<child_pixel->m_y<<L";";
-	//			//	++total_pixel_size;
-	//			//	++child_pixel;
-	//			//}
-
-
-	//		} else {
-	//			i32 total_pixel_size = 0;
-
-	//			for (i32 k = 0; k < 4; ++k) {
-	//				mt_point* begin = mser->m_points[k].m_x + mser->m_points;
-	//				mt_point* end = mser->m_points[k].m_y + mser->m_points;
-
-	//				if (begin == end) {
-	//					continue;
-	//				}
-
-	//				for (mt_point* pt = begin; pt < end; ++pt) {
-	//					s<<pt->m_x<<L","<<pt->m_y<<L";";
-	//					total_pixel_size += 1;
-	//				}
-	//			}
-
-	//			i32* child_info = (i32*)(mser->m_points + 4);
-
-	//			for (i32 k = 0; k < child_info[0]; ++k) {
-	//				stack_healper.push_back((i32)(child_info[k + 1] + mser - &cur_mser));
-	//			}
-	//		}
-	//	}
-
-	//	basiclog_info2(s);
-	//}
 }
 
 void img_ppms_mser::calculate_variation(mser_region* region) {

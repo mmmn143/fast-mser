@@ -124,7 +124,6 @@ namespace basicimg {
 		void recognize_mser();
 
 		void recognize_mser_normal();
-		void recognize_mser_with_parent_child_cache();
 
 		void remove_duplicated();
 

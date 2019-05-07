@@ -168,11 +168,11 @@ namespace basicimg {
 		*/
 		void merge_tree_parallel_4(const mt_mat& src, u8 gray_mask);
 
-		void merge_tree_parallel_4_step2(u8 merged_flag, i32 rows, i32 cols);
+		void merge_tree_parallel_4_step_with_order(u8 merged_flag, i32 rows, i32 cols);
 
 		void merge_tree_parallel_4_step(u8 merged_flag);
 
-		void merge(mser_region* a, mser_region* b, mser_region* split_region);
+		void connect(mser_region* a, mser_region* b, mser_region* split_region);
 
 		/** Determine msers
 		*/
@@ -181,9 +181,8 @@ namespace basicimg {
 
 		void recognize_mser_parallel_4();
 		void recognize_mser_parallel_4_parallel();
-		void recognize_mser_parallel_4_parallel_fast();
 		
-		void break_node(mser_region* r);
+		void disconnect(mser_region* r);
 
 		void extract_pixel(img_multi_msers& msers, u8 gray_mask);
 		
