@@ -1,4 +1,4 @@
-# fast-mser
+# Fast MSER
 
 
 ## Algorithms and Codes 
