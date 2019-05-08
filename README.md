@@ -22,7 +22,7 @@ Note that for channel parallel algorithms (CPCV-MSER, CPCV-MSER+, CPVF-MSER, CPI
 
 img_mser_base* mser = new img_idiap_mser(); // or other mser algorithms
 
-#pragma omp parallel for num_threads(4)
+#pragma omp parallel for num_threads(4) // 4 denotes the number of threads
 
 for (i32 i = 0; i < 4; ++i) {
 
