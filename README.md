@@ -26,9 +26,9 @@ img_mser_base* mser = new img_idiap_mser(); // or other mser algorithms
 
 for (i32 i = 0; i < 4; ++i) {
 
-  img_multi_msers mser_res;
+  &nbsp;&nbsp;&nbsp;&nbsp;img_multi_msers mser_res;
 
-  mser->extract(mser_res, srcs[i]);
+  &nbsp;&nbsp;&nbsp;&nbsp;mser->extract(mser_res, srcs[i]);
 
 }
 
