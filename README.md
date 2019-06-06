@@ -36,6 +36,7 @@ for (i32 i = 0; i < 4; ++i) {
 
 Requires:
 OpenCV 3.1
+Intel MKL (used in basicmath for matrix computation)
 
 Visual Studio 2012 (Release configuration, X64 platform)
 
