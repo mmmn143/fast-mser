@@ -46,6 +46,8 @@ Windows
 
 Visual Studio 2012 (Release configuration, X64 platform)
 
+Open all_projects.sln and build it, then you can test the comparison MSER algorithms.
+
 ## FAQ
 If you have any questions about how to build this project, please tell me in 'Issues'.
 Thank you very much!
