@@ -2,23 +2,62 @@
 
 #include "mt_mat_cache.h"
 
+
+
 namespace basicmath {
 	mt_mat_cache s_mat_cache;
 }
 
+mt_auto_mat_cache::mt_auto_mat_cache() {
+	s_mat_cache.enable_cache(sys_true);
+}
+
+mt_auto_mat_cache::~mt_auto_mat_cache() {
+	s_mat_cache.enable_cache(sys_false);
+}
+
 mt_mat_cache::mt_mat_cache() {
 	m_mutex = sys_thread_lock::create_mutex();
-	m_enable = sys_true;
-	m_memory_size = 1024 * 1024 * 1024;	//1GB
+	m_memory_size = 1024 * 1024 * 1024;
+	m_cache_number = 0;
 }
 
 mt_mat_cache::~mt_mat_cache() {
 	sys_thread_lock::release_mutex(m_mutex);
 }
 
-void mt_mat_cache::enable_cache(b8 enable, i64 mmeory_size) {
-	s_mat_cache.m_enable = enable;
-	s_mat_cache.m_memory_size = mmeory_size;
+void mt_mat_cache::set_memory_size(i64 memory_size) {
+	{
+		sys_thread_lock (s_mat_cache.m_mutex);
+		s_mat_cache.m_memory_size = memory_size;
+
+		s_mat_cache.statistic_memory();
+	}
+}
+
+i64 mt_mat_cache::get_memory_size() {
+	return s_mat_cache.m_memory_size;
+}
+
+void mt_mat_cache::output_cache_statistic() {
+	basiclog_info2(L"m_get_number: "<<s_mat_cache.m_get_number<<L"m_cache_number: "<<s_mat_cache.m_cache_number);
+}
+
+void mt_mat_cache::enable_cache(b8 enable) {
+	{
+		sys_thread_lock (s_mat_cache.m_mutex);
+		map<u64, thread_data>::iterator td = s_mat_cache.m_thread_data.find(sys_os::current_thread_id());
+
+		if (td == s_mat_cache.m_thread_data.end()) {
+			thread_data data;
+			data.m_enable = enable;
+
+			s_mat_cache.m_thread_data.insert(make_pair(sys_os::current_thread_id(), data));
+		} else {
+			td->second.m_enable = enable;
+			s_mat_cache.statistic_memory();
+		}
+	}
 }
 
 mt_mat mt_mat_cache::get_as(const mt_mat& src) {
@@ -32,31 +71,53 @@ mt_mat mt_mat_cache::get(const vector<i32>& sizes, mt_Depth_Channel depth_channe
 }
 
 mt_mat mt_mat_cache::get(i32 dim, const i32* sizes, mt_Depth_Channel depth_channel) {
-	if (m_enable) {
+	thread_data* data = NULL;
+	
+	{
 		sys_thread_lock lock(m_mutex);
-		for (i32 i = 0; i < (int)m_caches.size(); ++i) {
-			if (m_caches[i].reference_number() == 1 && m_caches[i].depth_channel() == depth_channel && m_caches[i].dim() == dim) {
-				b8 same_size = sys_true;
 
-				for (i32 j = 0; j < dim; ++j) {
-					if (m_caches[i].size()[j] != sizes[j]) {
-						same_size = sys_false;
-					}
-				}
+		++m_get_number;
 
-				if (same_size) {
-					m_caches[i].detach();
-					return m_caches[i];
-				}
-			}
+		map<u64, thread_data>::iterator td = m_thread_data.find(sys_os::current_thread_id());
+
+		if (td != m_thread_data.end()) {
+			data = &td->second;
 		}
 	}
 
+	if (data != NULL) {
+		if (data->m_enable) {
+			for (i32 i = 0; i < (int)m_caches.size(); ++i) {
+				if (m_caches[i].reference_number() == 1 && m_caches[i].depth_channel() == depth_channel && m_caches[i].dim() == dim) {
+					b8 same_size = sys_true;
+
+					for (i32 j = 0; j < dim; ++j) {
+						if (m_caches[i].size()[j] != sizes[j]) {
+							same_size = sys_false;
+						}
+					}
+
+					if (same_size) {
+						m_caches[i].detach();
+						m_cache_number += 1;
+						return m_caches[i];
+					}
+				}
+			}
+
+			mt_mat new_mat;
+			new_mat.create(dim, sizes, depth_channel);
+
+			m_caches.push_back(new_mat);
+
+			statistic_memory();
+
+			return new_mat;
+		} 
+	}
+		
 	mt_mat new_mat;
 	new_mat.create(dim, sizes, depth_channel);
-	m_caches.push_back(new_mat);
-
-	statistic_memory();
 	return new_mat;
 }
 
@@ -75,7 +136,7 @@ void mt_mat_cache::statistic_memory() {
 	}
 
 	if (total_memory > m_memory_size && total_memory > used_memory * 2) {
-		basiclog_info2(sys_strcombine()<<L"begin release memory in mt_mat_cache, before total memory: "<<total_memory<<L", used memory: "<<used_memory);
+		basiclog_info2(sys_strcombine()<<L", begin release memory in mt_mat_cache, before total memory: "<<total_memory<<L", used memory: "<<used_memory);
 
 		i32 retain_memory = used_memory * 2;
 
@@ -96,5 +157,5 @@ void mt_mat_cache::statistic_memory() {
 		}
 
 		basiclog_info2(sys_strcombine()<<L"finish release memory in mt_mat_cache, memory after releasing: "<<total_memory);
-	}
+	}	
 }

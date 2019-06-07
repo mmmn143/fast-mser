@@ -14,7 +14,7 @@ int main() {
 	//sys_strhelper_test().run(argvs);
 	//sys_json_test().run(argvs);
 	//sys_buffer_test().run(argvs);
-	sys_openmp_test().run(argvs);
+	
 	//sys_pointer_index_test().run(argvs);
 
 	i16 i = 1;

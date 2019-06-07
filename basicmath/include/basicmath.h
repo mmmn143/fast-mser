@@ -25,3 +25,12 @@ Other project should include this head file to use the features of BasicMath.
 #include "dynamic_programming/mt_01_bag.h"
 #include "dynamic_programming/mt_max_sum_for_continuous_element.h"
 #include "dynamic_programming/mt_longest_common_substring.h"
+
+
+#if defined basicsys_enable_mkl
+#pragma comment(lib, "mkl_core.lib")
+#pragma comment(lib, "mkl_intel_lp64.lib")
+#pragma comment(lib, "mkl_intel_thread.lib")
+#pragma comment(lib, "libiomp5md.lib")
+#elif defined 
+#endif

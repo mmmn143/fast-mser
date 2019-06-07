@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\src\test\mt_continuous_memory_test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\test\mt_openmp_test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\test\test.h">

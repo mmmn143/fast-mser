@@ -2,22 +2,16 @@
 
 
 
-#define basicmath_mkl
-
-
-
-
-
-#if defined basicmath_mkl
-#include <mkl.h>
-#elif defined 
-#endif
-
 #include <basicsys.h>
 using namespace basicsys;
 
 #include <basiclog.h>
 using namespace basiclog;
+
+#if defined basicsys_enable_mkl
+#include <mkl.h>
+#elif defined 
+#endif
 
 #include "mt_data_type.h"
 

@@ -66,10 +66,10 @@
     <ClInclude Include="..\..\src\stdafx\stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\sys_multi_process.h">
+    <ClInclude Include="..\..\include\sys_alg_analyzer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\sys_alg_analyzer.h">
+    <ClInclude Include="..\..\include\sys_os.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -104,10 +104,10 @@
     <ClCompile Include="..\..\src\sys_timer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\sys_multi_process.cpp">
+    <ClCompile Include="..\..\src\sys_alg_analyzer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\sys_alg_analyzer.cpp">
+    <ClCompile Include="..\..\src\sys_os.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -82,3 +82,6 @@ namespace basicsys {
 	static const b8 sys_true = 1;
 	static const b8 sys_false = 0;
 }
+
+
+//#define basicsys_enable_mkl

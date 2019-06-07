@@ -95,7 +95,7 @@ namespace basicmath {
 	private:
 		static void new_task(void*& task, Conv_Model mode, const mt_mat& src, const mt_mat& kernel, const mt_mat& res, const i32* strides, const i32* starts) {
 
-#if defined basicmath_mkl
+#if defined basicsys_enable_mkl
 			if (res.depth() == mt_F32) {
 				basiclog_assert2(VSL_STATUS_OK == vslsConvNewTask(&task, mode == Conv_Model_Direct ? VSL_CONV_MODE_DIRECT : VSL_CONV_MODE_FFT, res.dim(), src.size(), kernel.size(), res.size()));
 			} else if (res.depth() == mt_F64) {
@@ -112,7 +112,7 @@ namespace basicmath {
 		}
 
 		static void delete_task(void*& task) {
-#if defined basicmath_mkl
+#if defined basicsys_enable_mkl
 			vslConvDeleteTask(&task);
 #else
 			basiclog_unsupport2();
@@ -122,7 +122,7 @@ namespace basicmath {
 		static void convd(void* task, const f64* src, const i32* src_steps, const f64* kernel, const i32* kernel_steps, f64* res , const i32* res_steps) {
 
 
-#if defined basicmath_mkl
+#if defined basicsys_enable_mkl
 			basiclog_assert2(VSL_STATUS_OK == vsldConvExec(task, src, src_steps, kernel, kernel_steps, res, res_steps));
 #else
 			basiclog_unsupport2();
@@ -132,7 +132,7 @@ namespace basicmath {
 		static void convf(void* task, const f32* src, const i32* src_steps, const f32* kernel, const i32* kernel_steps, f32* res , const i32* res_steps) {
 
 
-#if defined basicmath_mkl
+#if defined basicsys_enable_mkl
 			basiclog_assert2(VSL_STATUS_OK == vslsConvExec(task, src, src_steps, kernel, kernel_steps, res, res_steps));
 #else
 			basiclog_unsupport2();
@@ -143,7 +143,15 @@ namespace basicmath {
 
 }
 
-mt_mat mt_mat::conv(const mt_mat& kernel, mt_Conv_Boundary_Type boundary_type /* = mt_Conv_Boundary_Type_Valid */, mt_Conv_Kernel_Align_Type align_type, const int* conv_strides /* = NULL */) const {	
+void mt_mat::conv(mt_mat& res, const mt_mat& kernel, mt_Conv_Boundary_Type boundary_type /* = mt_Conv_Boundary_Type_Valid */, mt_Conv_Kernel_Align_Type align_type /* = mt_Conv_Kernel_Align_Type_Row */, const int* conv_strides /* = NULL */) const {
+	if (&res == this) {
+		mt_mat temp;
+		conv(temp, kernel, boundary_type, align_type, conv_strides);
+
+		res = temp;
+		return;
+	}
+	
 	basiclog_assert2(depth() == mt_F32 || depth() == mt_F64);
 
 	basiclog_assert2(kernel.dim() == dim());
@@ -205,7 +213,7 @@ mt_mat mt_mat::conv(const mt_mat& kernel, mt_Conv_Boundary_Type boundary_type /*
 		res_channel_num = kernel.channel() * channel();
 	}
 
-	mt_mat res(dim(), sizes, mt_Depth_Channel(depth(), res_channel_num));
+	res.create(dim(), sizes, mt_Depth_Channel(depth(), res_channel_num));
 
 	mt_mat temp_src = *this;
 	mt_mat temp_kernel = kernel;
@@ -280,6 +288,11 @@ mt_mat mt_mat::conv(const mt_mat& kernel, mt_Conv_Boundary_Type boundary_type /*
 
 		m_auto_derivative->cnov(res, *this, kernel, boundary_type, temp_strides);
 	}
+}
+
+mt_mat mt_mat::conv(const mt_mat& kernel, mt_Conv_Boundary_Type boundary_type /* = mt_Conv_Boundary_Type_Valid */, mt_Conv_Kernel_Align_Type align_type, const int* conv_strides /* = NULL */) const {	
+	mt_mat res;
+	conv(res, kernel, boundary_type, align_type, conv_strides);
 
 	return res;
 }

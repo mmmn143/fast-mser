@@ -185,7 +185,10 @@ class mt_mat {
 		
 		mt_mat& copy_to(mt_mat& other) const;
 		mt_mat clone() const;
+		
+		void convert(mt_mat& res, mt_Depth depth) const;
 		mt_mat convert(mt_Depth depth) const;
+		
 		
 		mt_mat row(int row) const;
 		mt_mat col(int col) const;
@@ -560,6 +563,7 @@ class mt_mat {
 
 		mt_mat sub_stride(i32 size, const i32* strides) const;
 
+		void conv(mt_mat& res, const mt_mat& kernel, mt_Conv_Boundary_Type boundary_type = mt_Conv_Boundary_Type_Valid, mt_Conv_Kernel_Align_Type align_type = mt_Conv_Kernel_Align_Type_Row, const int* conv_strides = NULL) const;
 		mt_mat conv(const mt_mat& kernel, mt_Conv_Boundary_Type boundary_type = mt_Conv_Boundary_Type_Valid, mt_Conv_Kernel_Align_Type align_type = mt_Conv_Kernel_Align_Type_Row, const int* conv_strides = NULL) const;
 		
 		/** Calculate loss for current mat and the matching_mat.

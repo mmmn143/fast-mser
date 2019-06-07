@@ -73,6 +73,16 @@ namespace basicmath {
 		}
 
 		template<class T>
+		static T max(const T& a, const T& b) {
+			return a > b ? a : b;
+		}
+
+		template<class T>
+		static T min(const T& a, const T& b) {
+			return a < b ? a : b;
+		}
+
+		template<class T>
 		static T compute_min(i32 size, const T* values) {
 			T min_value = values[0];
 
@@ -419,6 +429,8 @@ namespace basicmath {
 		}
 
 		static u32 one_number(u32 value);
+
+		static void enable_omp_mkl(b8 enable);
 	};
 
 	template<class T>
@@ -435,6 +447,8 @@ namespace basicmath {
 
 		return true;
 	}
+
+	
 }
 
 #ifndef __OPENCV_CORE_CVSTD_HPP__

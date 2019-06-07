@@ -98,7 +98,7 @@ static void eval_cp(const mt_mat& src, img_mser_alg_factory* factory) {
 }
 
 void img_mser_test::run(vector<wstring>& argvs) {
-	sys_multi_process::enable_omp_mkl(sys_true);
+	mt_helper::enable_omp_mkl(sys_true);
 
 	sys_alg_analyzer::init();
 

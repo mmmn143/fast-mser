@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\sys_buffer_test.cpp" />
     <ClCompile Include="..\..\src\sys_json_test.cpp" />
-    <ClCompile Include="..\..\src\sys_openmp_test.cpp" />
     <ClCompile Include="..\..\src\sys_pointer_index_test.cpp" />
     <ClCompile Include="..\..\src\sys_strcombine_test.cpp" />
     <ClCompile Include="..\..\src\sys_strhelper_test.cpp" />
@@ -95,7 +94,7 @@
     <LinkIncremental>false</LinkIncremental>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <LibraryWPath>$(LibraryWPath)</LibraryWPath>
-    <OutDir>..\..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\bin\$(Platform)\vc11\</OutDir>
     <IntDir>..\..\intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <IncludePath>..\..\..\basiclog\include;..\..\..\basicmath\include;..\..\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);..\..\..\basic_thrid_libs\lib_mkl\include</IncludePath>
     <LibraryPath>..\..\..\basiclog\lib\x64\vc11;..\..\lib\x64\vc11;..\..\..\basicmath\lib\x64\vc11;..\..\..\basic_thrid_libs\lib_mkl\lib\x64;..\..\..\basic_thrid_libs\lib_intel_compiler\lib\x64;$(LibraryPath)</LibraryPath>
@@ -160,7 +159,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>basiclog.lib;basicsys.lib;basicmath.lib;mkl_core.lib;mkl_intel_lp64.lib;mkl_intel_thread.lib;libiomp5md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>basiclog.lib;basicsys.lib;basicmath.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

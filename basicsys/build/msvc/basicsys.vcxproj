@@ -152,7 +152,7 @@
     <ClInclude Include="..\..\include\sys_for_index.h" />
     <ClInclude Include="..\..\include\sys_basic_define.h" />
     <ClInclude Include="..\..\include\sys_json.h" />
-    <ClInclude Include="..\..\include\sys_multi_process.h" />
+    <ClInclude Include="..\..\include\sys_os.h" />
     <ClInclude Include="..\..\include\sys_path.h" />
     <ClInclude Include="..\..\include\sys_stlhelper.h" />
     <ClInclude Include="..\..\include\sys_strcombine.h" />
@@ -165,7 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\sys_alg_analyzer.cpp" />
-    <ClCompile Include="..\..\src\sys_multi_process.cpp" />
+    <ClCompile Include="..\..\src\sys_os.cpp" />
     <ClCompile Include="..\..\src\sys_buffer.cpp" />
     <ClCompile Include="..\..\src\sys_exe_config.cpp" />
     <ClCompile Include="..\..\src\sys_json.cpp" />

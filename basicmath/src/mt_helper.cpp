@@ -130,3 +130,28 @@ u32 mt_helper::one_number(u32 value) {
 
 	return res;
 } 
+
+/**
+#pragma omp parallel for num_threads(omp_get_max_threads()) is equivalent to #pragma omp parallel for.
+*/
+void mt_helper::enable_omp_mkl(b8 enable) {
+	if (enable) {
+		int sys_suggest_threads = omp_get_num_procs() - 1;
+		if (sys_suggest_threads == 0) {
+			sys_suggest_threads = 1;
+		}
+
+		omp_set_num_threads(sys_suggest_threads);
+		omp_set_dynamic(1);
+
+#if defined basicsys_enable_mkl
+		mkl_set_num_threads(sys_suggest_threads);
+		mkl_set_dynamic(1);
+#endif
+	} else {
+		omp_set_num_threads(1);
+#if defined basicsys_enable_mkl
+		mkl_set_num_threads(1);
+#endif
+	}
+}

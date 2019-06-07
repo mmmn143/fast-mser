@@ -27,5 +27,5 @@ using namespace std;
 #include "sys_timer.h"
 #include "sys_json.h"
 #include "sys_thread_lock.h"
-#include "sys_multi_process.h"
+#include "sys_os.h"
 #include "sys_alg_analyzer.h"

@@ -2035,8 +2035,8 @@ mt_mat mt_mat::clone() const {
 	return res;
 }
 
-mt_mat mt_mat::convert(mt_Depth depth) const {
-	mt_mat res(dim(), size(), mt_Depth_Channel(depth, channel()));
+void mt_mat::convert(mt_mat& res, mt_Depth depth) const {
+	res.create(dim(), size(), mt_Depth_Channel(depth, channel()));
 
 	mt_array_element_const_iterator cur_iter(*this);
 	mt_array_element_iterator other_iter(res);
@@ -2054,6 +2054,11 @@ mt_mat mt_mat::convert(mt_Depth depth) const {
 		private_mat::get_data(values, ptr_cur, depth_channel());
 		private_mat::set_data(ptr_other, res.depth_channel(), &values[0], (i32)values.size());
 	}
+}
+
+mt_mat mt_mat::convert(mt_Depth depth) const {
+	mt_mat res;
+	convert(res, depth);
 
 	return res;
 }

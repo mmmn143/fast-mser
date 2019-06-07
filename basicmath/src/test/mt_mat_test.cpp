@@ -1,5 +1,4 @@
 #include "test.h"
-#include <mkl.h>
 
 
 class mt_create_test {
@@ -982,28 +981,32 @@ static void test_eigen() {
 }
 
 void mt_mat_test::run(vector<wstring>& argvs) {
-	sys_multi_process::enable_omp_mkl(sys_true);
+	mt_helper::enable_omp_mkl(sys_true);
 
-	b8 enable_performance_test = sys_false;
+	{
+		mt_auto_mat_cache cache;
 
-	mt_create_test::test(enable_performance_test);
-	mt_bias_test::test(enable_performance_test);
-	test_mat_sub();
-	test_mat_t();
-	test_mat_flip();
-	test_dim_channel();
-	test_get_index();
-	mt_auto_derivative_test::test(enable_performance_test);
-	test_mul();
-	mt_conv_test::test(enable_performance_test);
-	test_mat_channel();
-	test_convert();
-	test_mat_add();
-	test_repeat();
-	test_reshape();
-	test_save_mat();
-	mt_pooling_test::test(enable_performance_test);
-	test_sub_stride();
-	test_at_ptr();
-	test_eigen();
+		b8 enable_performance_test = sys_false;
+
+		mt_create_test::test(enable_performance_test);
+		mt_bias_test::test(enable_performance_test);
+		test_mat_sub();
+		test_mat_t();
+		test_mat_flip();
+		test_dim_channel();
+		test_get_index();
+		mt_auto_derivative_test::test(enable_performance_test);
+		test_mul();
+		mt_conv_test::test(enable_performance_test);
+		test_mat_channel();
+		test_convert();
+		test_mat_add();
+		test_repeat();
+		test_reshape();
+		test_save_mat();
+		mt_pooling_test::test(enable_performance_test);
+		test_sub_stride();
+		test_at_ptr();
+		test_eigen();
+	}
 }

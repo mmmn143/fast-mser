@@ -79,7 +79,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <LibraryPath>..\..\lib\x64\vc11;..\..\..\basicsys\lib\x64\vc11;$(LibraryPath)</LibraryPath>
-    <OutDir>..\..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\bin\$(Platform)\vc11\</OutDir>
     <IncludePath>..\..\..\basicsys\include;..\..\include;$(IncludePath)</IncludePath>
     <IntDir>..\..\intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
