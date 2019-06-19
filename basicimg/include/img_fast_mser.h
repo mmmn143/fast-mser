@@ -45,6 +45,8 @@ namespace basicimg {
 			u32 m_region_flag : 2;
 			u32 m_gray_level : 8;
 			u32 m_calculated_var : 1;
+			u32 m_boundary_region : 1;
+			u32 m_patch_index : 8;
 
 			union
 			{
@@ -100,8 +102,8 @@ namespace basicimg {
 			i32 m_height_with_boundary;
 
 			i32 m_er_number;
-			mser_region* m_mser_regions;
-			mser_region* m_mser_regions_end;
+			mt_block_memory<mser_region> m_mser_regions;
+
 			i16** m_heap;
 			connected_comp m_comp[256];
 			i16** m_heap_start[257];
@@ -123,9 +125,6 @@ namespace basicimg {
 
 		linked_point* m_linked_points;
 		u32 m_linked_point_size;
-
-		mser_region* m_mser_regions;
-		u32 m_mser_region_size;
 
 		i16** m_heap;
 		u32 m_heap_size;
@@ -160,8 +159,8 @@ namespace basicimg {
 		void make_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask, u8 patch_index);
 		void process_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask);
 
-		void init_comp(connected_comp* comp, mser_region*& region, u8 patch_index);
-		void new_region(connected_comp* comp, mser_region*& region, u8 patch_index);
+		void init_comp(connected_comp* comp, mser_region* region, u8 patch_index);
+		void new_region(connected_comp* comp, mser_region* region, u8 patch_index);
 
 		/**
 		Build MSER tree for whole image.
@@ -172,7 +171,7 @@ namespace basicimg {
 
 		void merge_tree_parallel_4_step(u8 merged_flag);
 
-		void connect(mser_region* a, mser_region* b, mser_region* split_region);
+		void connect(mser_region* a, mser_region* b, u32 split_patch_index);
 
 		/** Determine msers
 		*/

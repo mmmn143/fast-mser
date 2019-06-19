@@ -17,6 +17,7 @@ int main() {
 	mt_longest_common_substring_test().run(argvs);
 	mt_continuous_memory_test().run(argvs);
 	mt_openmp_test().run(argvs);
+	mt_block_memory_test().run(argvs);
 
 	f32 val = -(f32)mt_Infinity;
 

@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\test\mt_block_memory_test.cpp" />
     <ClCompile Include="..\..\src\test\mt_continuous_memory_test.cpp" />
     <ClCompile Include="..\..\src\test\mt_longest_common_substring_test.cpp" />
     <ClCompile Include="..\..\src\test\mt_max_sum_for_continuous_element_test.cpp" />

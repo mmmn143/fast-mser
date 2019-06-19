@@ -26,6 +26,8 @@ Other project should include this head file to use the features of BasicMath.
 #include "dynamic_programming/mt_max_sum_for_continuous_element.h"
 #include "dynamic_programming/mt_longest_common_substring.h"
 
+#include "mt_block_memory.h"
+
 
 #if defined basicsys_enable_mkl
 #pragma comment(lib, "mkl_core.lib")

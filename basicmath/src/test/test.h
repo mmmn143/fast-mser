@@ -19,3 +19,4 @@ sys_declare_test(mt_max_sum_for_continuous_element);
 sys_declare_test(mt_longest_common_substring);
 sys_declare_test(mt_continuous_memory);
 sys_declare_test(mt_openmp);
+sys_declare_test(mt_block_memory);

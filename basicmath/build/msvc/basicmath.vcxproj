@@ -145,6 +145,7 @@
     <ClInclude Include="..\..\include\mt_array_iteration.h" />
     <ClInclude Include="..\..\include\mt_auto_derivative.h" />
     <ClInclude Include="..\..\include\mt_auto_derivative_tree.h" />
+    <ClInclude Include="..\..\include\mt_block_memory.h" />
     <ClInclude Include="..\..\include\mt_data_type.h" />
     <ClInclude Include="..\..\include\mt_helper.h" />
     <ClInclude Include="..\..\include\mt_hist.h" />

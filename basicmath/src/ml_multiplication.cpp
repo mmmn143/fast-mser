@@ -74,7 +74,7 @@ namespace basicmath {
 	private:
 
 		static void basicmath_sgemm(b8 trans_a, b8 trans_b, i32 m, i32 n, i32 k, const f32* a, i32 lda, const f32* b, i32 ldb, f32* c, i32 ldc) {
-#if defined basicmath_mkl
+#if defined basicsys_enable_mkl
 			cblas_sgemm(CblasRowMajor, trans_a ? CblasTrans : CblasNoTrans, trans_b ? CblasTrans : CblasNoTrans, m, n, k, 1.0f, a, lda, b, ldb, 0.0f, c, ldc);
 #else
 			sgemm_impl(trans_a, trans_b, m, n, k, a, lda, b, ldb, c, ldc);
@@ -82,7 +82,7 @@ namespace basicmath {
 		}
 
 		static void basicmath_dgemm(b8 trans_a, b8 trans_b, i32 m, i32 n, i32 k, const f64* a, i32 lda, const f64* b, i32 ldb, f64* c, i32 ldc) {
-#if defined basicmath_mkl
+#if defined basicsys_enable_mkl
 			cblas_dgemm(CblasRowMajor, trans_a ? CblasTrans : CblasNoTrans, trans_b ? CblasTrans : CblasNoTrans, m, n, k, 1.0f, a, lda, b, ldb, 0.0f, c, ldc);
 #else
 			dgemm_impl(trans_a, trans_b, m, n, k, a, lda, b, ldb, c, ldc);
