@@ -155,3 +155,7 @@ void mt_helper::enable_omp_mkl(b8 enable) {
 #endif
 	}
 }
+
+i32 mt_helper::get_number_procs() {
+	return omp_get_num_procs();
+}

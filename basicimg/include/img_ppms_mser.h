@@ -115,11 +115,13 @@ namespace basicimg {
 		vector<mser_region*> m_remove_duplicated_memory_helper;
 		vector<mser_region*> m_merged_regions;
 
+		vector<u32> m_partition_indexes;
+
 		void allocate_memory(const mt_mat& img, const img_mask_info<u8>& mask);
-		void allocate_memory_parallel_4(const mt_mat& img, const img_mask_info<u8>& mask);
 
 		void build_tree(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
 		void build_tree_parallel_4(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
+		void build_tree_parallel_32(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
 
 		void extract_parallel_4(img_multi_msers& msers, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask);
 		void make_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask, u8 patch_index);
@@ -128,10 +130,16 @@ namespace basicimg {
 		void init_comp(connected_comp* comp, mser_region*& region, u8 patch_index);
 		void new_region(connected_comp* comp, mser_region*& region, u8 patch_index);
 
+		
+
 		/**
 		Build MSER tree for whole image.
 		*/
 		void merge_tree_parallel_4();
+
+		void merge_tree_parallel_32();
+
+		void merge_tree_parallel_step(u32* parallel_indexes, u32 size, u32 parallel_step, b8 left_right);
 
 		void merge_tree_parallel_4_step(u8 merged_flag);
 
@@ -142,14 +150,17 @@ namespace basicimg {
 
 		void recognize_mser();
 
-		void recognize_mser_parallel_4();
-		void recognize_mser_parallel_4_normal();
-		void recognize_mser_parallel_4_parallel();
+		void recognize_mser_serial();
+		void recognize_mser_parallel();
+		void recognize_mser_parallel_worker(i32 parallel_index);
+
+		void recognize_mser_parallel_4_acceleration();
 		
 		void extract_pixel(img_multi_msers& msers, u8 gray_mask);
-		void extract_pixel_parallel_4(img_multi_msers& msers, u8 gray_mask);
-		void extract_pixel_parallel_4_serial_impl(img_multi_msers& msers, u8 gray_mask);
-		void extract_pixel_parallel_4_parallel_impl(img_multi_msers& msers, u8 gray_mask);
+
+		void extract_pixel_serial(img_multi_msers& msers, u8 gray_mask);
+		void extract_pixel_parallel(img_multi_msers& msers, u8 gray_mask);
+		void extract_pixel_parallel_4_acceleration(img_multi_msers& msers, u8 gray_mask);
 
 		void calculate_variation(mser_region* region);
 

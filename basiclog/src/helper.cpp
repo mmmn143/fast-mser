@@ -3,14 +3,13 @@
 #endif
 
 #include <iostream>
-#include <string>
 
-using namespace std;
 
-#include "helper.h"
 
 #include <basicsys.h>
 using namespace basicsys;
+
+#include "helper.h"
 
 namespace basiclog {
 

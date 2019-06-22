@@ -11,6 +11,8 @@ namespace basicsys {
 
 		static void add(const wstring& tag, i64 v);
 
+		static void max_(const wstring& tag, i64 v);
+
 		static void release();
 
 	protected:

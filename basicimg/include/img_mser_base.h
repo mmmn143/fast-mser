@@ -83,6 +83,10 @@ namespace basicimg {
 			m_from_min_max[1] = sys_true;
 
 			m_recursive_point_threshold = 100;
+			m_parallel_thread_number = 4;
+
+			m_channel_total_running_memory = 0;
+			m_channel_total_pixel_number = 0;
 		}
 
 		virtual ~img_mser_base() {}
@@ -129,6 +133,14 @@ namespace basicimg {
 			return m_recursive_point_threshold;
 		}
 
+		void set_parallel_thread_number(i32 thread_number) {
+			m_parallel_thread_number = thread_number;
+		}
+
+		i32 get_parallel_thread_number() {
+			return m_parallel_thread_number;
+		}
+
 		void extract(img_multi_msers& res, const mt_mat& gray_src, const img_mask_info<u8>& mask = img_mask_info<u8>());
 		virtual void clear_memory_cache() {}
 
@@ -154,6 +166,9 @@ namespace basicimg {
 
 		i32 m_recursive_point_threshold;
 		u32 m_channel_total_pixel_number;
+		u32 m_channel_total_running_memory;
+
+		i32 m_parallel_thread_number;	// only valid for parallel MSER algorithms
 	};
 
 	class img_mser_alg_factory {

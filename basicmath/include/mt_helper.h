@@ -431,6 +431,8 @@ namespace basicmath {
 		static u32 one_number(u32 value);
 
 		static void enable_omp_mkl(b8 enable);
+
+		static i32 get_number_procs();
 	};
 
 	template<class T>

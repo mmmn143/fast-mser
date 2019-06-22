@@ -47,3 +47,21 @@ void sys_alg_analyzer::add(const wstring& tag, i64 v) {
 		m_info.find(tag)->second += v;
 	}
 }
+
+void sys_alg_analyzer::max_(const wstring& tag, i64 v) {
+	if (m_mutex == NULL) {
+		return;
+	}
+
+	sys_thread_lock lock(m_mutex);
+
+	map<wstring, i64>::iterator iter = m_info.find(tag);
+
+	if (iter == m_info.end()) {
+		m_info.insert(make_pair(tag, v));
+	} else {
+		if (v > iter->second) {
+			iter->second = v;
+		}
+	}
+}
