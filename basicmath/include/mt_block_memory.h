@@ -71,12 +71,11 @@ namespace basicmath {
 			i32 m_visit_number;
 		};
 
-
-		mt_block_memory(i32 block_size = -1, b8 use_new = sys_false, i32 max_reuse = 0) {
+		mt_block_memory(i32 block_size_2_base = -1, b8 use_new = sys_false, i32 max_reuse = 0) {
 			default_param();
 
-			if (block_size >= 0) {
-				init(block_size, use_new, max_reuse);
+			if (block_size_2_base >= 0) {
+				init(block_size_2_base, use_new, max_reuse);
 			}
 		}
 
@@ -103,13 +102,13 @@ namespace basicmath {
 		}
 
 		void reset() {
-			init(m_block_size, m_use_new, m_resue_max_number);
+			init(m_block_size_2_base, m_use_new, m_resue_max_number);
 		}
 
-		void init(i32 block_size, b8 use_new = sys_false, i32 max_reuse = 0) {
-			basiclog_assert2(block_size > 0);
+		void init(i32 block_size_2_base, b8 use_new = sys_false, i32 max_reuse = 0) {
+			basiclog_assert2(block_size_2_base >= 0);
 
-			if (block_size == m_block_size && m_use_new == use_new) {
+			if (block_size_2_base == m_block_size_2_base && m_use_new == use_new) {
 				m_cur_block = 0;
 				m_cur_data = m_datas.front();
 				m_cur_block_end = m_cur_data + m_block_size;
@@ -124,7 +123,9 @@ namespace basicmath {
 
 				m_datas.clear();
 
-				m_block_size = block_size;
+				m_block_size_2_base = block_size_2_base;
+				m_block_size = 1 << m_block_size_2_base;
+				m_block_size_mask = m_block_size - 1;
 				m_use_new = use_new;
 				m_cur_block = -1;
 				next_block();
@@ -151,11 +152,11 @@ namespace basicmath {
 		}
 
 		T& at(i32 index) {
-			return m_datas[index / m_block_size][index % m_block_size];
+			return m_datas[index >> m_block_size_2_base][index & m_block_size_mask];
 		}
 
 		const T& at(i32 index) const {
-			return m_datas[index / m_block_size][index % m_block_size];
+			return m_datas[index >> m_block_size_2_base][index & m_block_size_mask];
 		}
 
 		void assert_addr(T* data) {
@@ -186,6 +187,10 @@ namespace basicmath {
 			}
 
 			return sys_true;
+		}
+
+		u64 memory_size() {
+			return m_datas.size() * m_block_size * sizeof(T);
 		}
 
 		void next_block() {
@@ -219,6 +224,8 @@ namespace basicmath {
 		i32 m_memory_size;
 
 		i32 m_block_size;
+		i32 m_block_size_2_base;
+		i32 m_block_size_mask;
 		b8 m_use_new;
 		i64* m_reuse_indexes;
 		i32 m_resue_max_number;
@@ -229,7 +236,9 @@ namespace basicmath {
 
 	protected:
 		void default_param() {
+			m_block_size_2_base = 0;
 			m_block_size = 0;
+			m_block_size_mask = 0;
 			m_cur_block = -1;
 			m_use_new = sys_false;
 			m_resue_max_number = 0;

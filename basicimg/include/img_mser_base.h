@@ -166,7 +166,7 @@ namespace basicimg {
 
 		i32 m_recursive_point_threshold;
 		u32 m_channel_total_pixel_number;
-		u32 m_channel_total_running_memory;
+		u64 m_channel_total_running_memory;
 
 		i32 m_parallel_thread_number;	// only valid for parallel MSER algorithms
 	};

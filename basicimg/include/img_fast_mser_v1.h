@@ -4,16 +4,14 @@
 
 namespace basicimg {
 
-	class img_fast_mser : public img_mser_base {
+	class img_fast_mser_v1 : public img_mser_base {
 	public:
 
-		img_fast_mser();
+		img_fast_mser_v1();
 
-		~img_fast_mser();
+		~img_fast_mser_v1();
 
 	protected:
-
-		void inner_extract(img_multi_msers& res, const mt_mat& gray_src, const img_mask_info<u8>& mask);
 
 		void clear_memory_cache();
 
@@ -86,8 +84,6 @@ namespace basicimg {
 
 		class parallel_info {
 		public:
-
-
 
 			//4 for direction, 9 for pixel, 1 for boundary flag, 1 for visited flag
 			i16* m_masked_image_data;

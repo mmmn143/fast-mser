@@ -8,8 +8,8 @@
 #include "img_opencv3_mser.h"
 #include "img_idiap_mser.h"
 #include "img_vlfeat_mser.h"
-#include "img_ppms_mser.h"
-#include "img_fast_mser.h"
+#include "img_fast_mser_v1.h"
+#include "img_fast_mser_v2.h"
 #include "img_ms_mser.h"
 
 img_mser::~img_mser() {
@@ -115,7 +115,7 @@ void img_mser_base::extract(img_multi_msers& res, const mt_mat& gray_src, const 
 }
 
 img_mser_base* img_mser_alg_factory::new_instance() {
-	if (typeid(img_linked_linear_mser).name() == m_class_name) {
+if (typeid(img_linked_linear_mser).name() == m_class_name) {
 		return new img_linked_linear_mser();
 	} else if (typeid(img_opencv3_mser).name() == m_class_name) {
 		return new img_opencv3_mser();
@@ -127,10 +127,10 @@ img_mser_base* img_mser_alg_factory::new_instance() {
 		return new img_idiap_mser();
 	} else if (typeid(img_vlfeat_mser).name() == m_class_name) {
 		return new img_vlfeat_mser();
-	} else if (typeid(img_fast_mser).name() == m_class_name) {
-		return new img_fast_mser();
-	} else if (typeid(img_ppms_mser).name() == m_class_name) {
-		return new img_ppms_mser();
+	} else if (typeid(img_fast_mser_v1).name() == m_class_name) {
+		return new img_fast_mser_v1();
+	} else if (typeid(img_fast_mser_v2).name() == m_class_name) {
+		return new img_fast_mser_v2();
 	} else if (typeid(img_ms_mser).name() == m_class_name) {
 		return new img_ms_mser();
 	}

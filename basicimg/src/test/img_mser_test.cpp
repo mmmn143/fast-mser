@@ -109,7 +109,7 @@ void img_mser_test::run(vector<wstring>& argvs) {
 	log_logger::get_logger()->enable_debug(false);
 	log_logger::get_logger()->enable_warning(false);
 
-	img_mser_alg_factory* factory = new img_mser_alg_factory(typeid(img_linked_linear_mser).name());
+	img_mser_alg_factory* factory = new img_mser_alg_factory(typeid(img_fast_mser_v2).name());
 
 	eval_pp(gray_test_image, factory);
 	sys_alg_analyzer::release();

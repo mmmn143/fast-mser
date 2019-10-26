@@ -25,7 +25,8 @@
     <ClInclude Include="..\..\include\img_draw.h" />
     <ClInclude Include="..\..\include\img_canny.h" />
     <ClInclude Include="..\..\include\img_edge_result.h" />
-    <ClInclude Include="..\..\include\img_fast_mser.h" />
+    <ClInclude Include="..\..\include\img_fast_mser_v1.h" />
+    <ClInclude Include="..\..\include\img_fast_mser_v2.h" />
     <ClInclude Include="..\..\include\img_helper.h" />
     <ClInclude Include="..\..\include\img_idiap_mser.h" />
     <ClInclude Include="..\..\include\img_img.h" />
@@ -38,7 +39,6 @@
     <ClInclude Include="..\..\include\img_opencv_mser.h" />
     <ClInclude Include="..\..\include\img_origin_mser.h" />
     <ClInclude Include="..\..\include\img_mser_result.h" />
-    <ClInclude Include="..\..\include\img_ppms_mser.h" />
     <ClInclude Include="..\..\include\img_stroke_width_transform.h" />
     <ClInclude Include="..\..\include\img_types.h" />
     <ClInclude Include="..\..\include\img_vlfeat_mser.h" />
@@ -50,7 +50,8 @@
     <ClCompile Include="..\..\src\img_connected_component.cpp" />
     <ClCompile Include="..\..\src\img_draw.cpp" />
     <ClCompile Include="..\..\src\img_draw_win_impl.cpp" />
-    <ClCompile Include="..\..\src\img_fast_mser.cpp" />
+    <ClCompile Include="..\..\src\img_fast_mser_v1.cpp" />
+    <ClCompile Include="..\..\src\img_fast_mser_v2.cpp" />
     <ClCompile Include="..\..\src\img_helper.cpp" />
     <ClCompile Include="..\..\src\img_idiap_mser.cpp" />
     <ClCompile Include="..\..\src\img_img.cpp" />
@@ -62,7 +63,6 @@
     <ClCompile Include="..\..\src\img_opencv3_mser.cpp" />
     <ClCompile Include="..\..\src\img_opencv_mser.cpp" />
     <ClCompile Include="..\..\src\img_origin_mser.cpp" />
-    <ClCompile Include="..\..\src\img_ppms_mser.cpp" />
     <ClCompile Include="..\..\src\img_stroke_width_transform.cpp" />
     <ClCompile Include="..\..\src\img_vlfeat_mser.cpp" />
   </ItemGroup>

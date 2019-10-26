@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "img_fast_mser.h"
+#include "img_fast_mser_v1.h"
 
 #define get_real_for_merged(region)	\
 	for (;region != NULL && region->m_region_flag == mser_region::Flag_Merged; region = region->m_parent){}	\
@@ -20,7 +20,7 @@
 		m_linked_points[tail].m_ref = real_tail;\
 	}
 	
-img_fast_mser::img_fast_mser()
+img_fast_mser_v1::img_fast_mser_v1()
 : img_mser_base() {
 
 	m_linked_points = NULL;
@@ -41,14 +41,14 @@ img_fast_mser::img_fast_mser()
 	m_merged_point_size = 0;
 }
 
-img_fast_mser::~img_fast_mser() {
+img_fast_mser_v1::~img_fast_mser_v1() {
 	basicsys_free(m_heap);
 	basicsys_free(m_linked_points);
 	basicsys_free(m_masked_image);
 	basicsys_free(m_boundary_regions);
 }
 
-void img_fast_mser::clear_memory_cache() {
+void img_fast_mser_v1::clear_memory_cache() {
 	basicsys_free(m_heap);
 	basicsys_free(m_linked_points);
 	basicsys_free(m_masked_image);
@@ -64,11 +64,11 @@ void img_fast_mser::clear_memory_cache() {
 	m_pinfo.swap(vector<parallel_info>());
 }
 
-void img_fast_mser::allocate_memory(const mt_mat& img, const img_mask_info<u8>& mask) {
+void img_fast_mser_v1::allocate_memory(const mt_mat& img, const img_mask_info<u8>& mask) {
 	allocate_memory_parallel_4(img, mask);
 }
 
-void img_fast_mser::allocate_memory_parallel_4(const mt_mat& img, const img_mask_info<u8>& mask) {
+void img_fast_mser_v1::allocate_memory_parallel_4(const mt_mat& img, const img_mask_info<u8>& mask) {
 	m_pinfo.resize(4);
 
 	u32 left_width = (u32)img.size()[1] / 2;
@@ -136,10 +136,8 @@ void img_fast_mser::allocate_memory_parallel_4(const mt_mat& img, const img_mask
 		m_boundary_regions = (mser_region**)malloc(sizeof(mser_region*) * m_boundary_region_size);
 	}
 
-	i32 memory_cost = sizeof(i16) * m_masked_image_size + sizeof(i16*) * m_heap_size + sizeof(linked_point) * m_linked_point_size + sizeof(mser_region*) * (m_boundary_region_size)
+	m_channel_total_running_memory += sizeof(i16) * m_masked_image_size + sizeof(i16*) * m_heap_size + sizeof(linked_point) * m_linked_point_size + sizeof(mser_region*) * (m_boundary_region_size)
 		+ sizeof(i16**) * 257 + sizeof(connected_comp) * 257 + sizeof(u32) * 257 * 2;
-
-	basiclog_info2(sys_strcombine()<<L"linear memory cost "<< memory_cost / 1024.0 / 1024.0 <<L"MB");
 
 	u32 i = 0;
 	i32 memory_offset_for_region = 0;
@@ -235,11 +233,17 @@ void img_fast_mser::allocate_memory_parallel_4(const mt_mat& img, const img_mask
 
 }
 
-void img_fast_mser::build_tree(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask) {
+void img_fast_mser_v1::build_tree(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask) {
 	build_tree_parallel_4(src, mask, gray_mask);
+
+	if (gray_mask == 255 || m_from_min_max[1] == sys_false) {
+		for (i32 i = 0; i < (i32)m_pinfo.size(); ++i) {
+			m_channel_total_running_memory += m_pinfo[i].m_mser_regions.memory_size();
+		}
+	}
 }
 
-void img_fast_mser::build_tree_parallel_4(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask) {
+void img_fast_mser_v1::build_tree_parallel_4(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask) {
 #pragma omp parallel for num_threads(4)
 	for (i32 i = 0; i < 4; ++i) {
 		make_tree_patch(m_pinfo[i], src, mask, gray_mask, i);
@@ -251,7 +255,7 @@ void img_fast_mser::build_tree_parallel_4(const mt_mat& src, const img_mask_info
 	sys_alg_analyzer::add(L"merging_process", sys_timer::get_tick_cout() - tick);
 }
 
-void img_fast_mser::make_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask, u8 patch_index) {
+void img_fast_mser_v1::make_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask, u8 patch_index) {
 	sys_timer timer(L"make_tree_patch");
 	timer.begin();
 
@@ -352,6 +356,7 @@ void img_fast_mser::make_tree_patch(parallel_info& pinfo, const mt_mat& img, con
 			if (ptsptr->m_y == pinfo.m_height - 1 && pinfo.m_boundary_regions[3] != NULL) {
 				pinfo.m_boundary_regions[3][ptsptr->m_x] = comptr->m_region;
 			}
+
 			comptr->m_region->m_boundary_region = 1;
 		}
 
@@ -523,7 +528,7 @@ void img_fast_mser::make_tree_patch(parallel_info& pinfo, const mt_mat& img, con
 	basiclog_info2(sys_strcombine()<<L"er number "<<erCount << L" region number " << (pinfo.m_er_number) << L" mser number " << mser_number);
 }
 
-void img_fast_mser::process_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask) {
+void img_fast_mser_v1::process_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask) {
 	sys_timer timer(L"process_tree_patch");
 	timer.begin();
 	
@@ -774,7 +779,7 @@ void img_fast_mser::process_tree_patch(parallel_info& pinfo, const mt_mat& img, 
 	timer.end();
 }
 
-void img_fast_mser::init_comp(connected_comp* comptr, mser_region* region, u8 patch_index) {
+void img_fast_mser_v1::init_comp(connected_comp* comptr, mser_region* region, u8 patch_index) {
 	comptr->m_size = 0;
 
 	region->m_gray_level = (u8)comptr->m_gray_level;
@@ -789,7 +794,7 @@ void img_fast_mser::init_comp(connected_comp* comptr, mser_region* region, u8 pa
 	comptr->m_region = region;	
 }
 
-void img_fast_mser::new_region(connected_comp* comptr, mser_region* region, u8 patch_index) {
+void img_fast_mser_v1::new_region(connected_comp* comptr, mser_region* region, u8 patch_index) {
 	region->m_gray_level = (u8)comptr->m_gray_level;
 	region->m_region_flag = mser_region::Flag_Unknow;
 
@@ -800,10 +805,9 @@ void img_fast_mser::new_region(connected_comp* comptr, mser_region* region, u8 p
 	region->m_patch_index = patch_index;
 	
 	comptr->m_region = region;
-	++region;
 }
 
-void img_fast_mser::merge_tree_parallel_4(const mt_mat& src, u8 gray_mask) {	
+void img_fast_mser_v1::merge_tree_parallel_4(const mt_mat& src, u8 gray_mask) {	
 	m_merged_number = 0;
 
 	// merge trees with pixel order
@@ -901,7 +905,7 @@ void img_fast_mser::merge_tree_parallel_4(const mt_mat& src, u8 gray_mask) {
 	basiclog_info2(sys_strcombine()<<L"merged er number: "<<m_merged_number);
 }
 
-void img_fast_mser::merge_tree_parallel_4_step_with_order(u8 merged_flag, i32 rows, i32 cols) {
+void img_fast_mser_v1::merge_tree_parallel_4_step_with_order(u8 merged_flag, i32 rows, i32 cols) {
 	
 	
 	if (merged_flag == 0) {
@@ -966,7 +970,7 @@ void img_fast_mser::merge_tree_parallel_4_step_with_order(u8 merged_flag, i32 ro
 	}
 }
 
-void img_fast_mser::merge_tree_parallel_4_step(u8 merged_flag) {
+void img_fast_mser_v1::merge_tree_parallel_4_step(u8 merged_flag) {
 	if (merged_flag == 1 || merged_flag == 2) {
 		u32 left_parallel_index = 0;
 		u32 right_parallel_index = 1;
@@ -1030,7 +1034,7 @@ void img_fast_mser::merge_tree_parallel_4_step(u8 merged_flag) {
 	}
 }
 
-void img_fast_mser::connect(mser_region* bigger, mser_region* smaller, u32 split_patch_index) {
+void img_fast_mser_v1::connect(mser_region* bigger, mser_region* smaller, u32 split_patch_index) {
 	if (bigger == smaller) {
 		return;
 	}
@@ -1164,7 +1168,7 @@ void img_fast_mser::connect(mser_region* bigger, mser_region* smaller, u32 split
 
 
 
-void img_fast_mser::disconnect(mser_region* r) {
+void img_fast_mser_v1::disconnect(mser_region* r) {
 	i32 real_tail;
 	get_real_tail(r->m_tail, real_tail);
 
@@ -1206,15 +1210,15 @@ void img_fast_mser::disconnect(mser_region* r) {
 	m_linked_points[r->m_tail].m_next = -1;
 }
 
-void img_fast_mser::recognize_mser() {
+void img_fast_mser_v1::recognize_mser() {
 	recognize_mser_parallel_4();
 }
 
-void img_fast_mser::recognize_mser_parallel_4() {
+void img_fast_mser_v1::recognize_mser_parallel_4() {
 	recognize_mser_parallel_4_parallel();
 }
 
-void img_fast_mser::recognize_mser_parallel_4_parallel() {
+void img_fast_mser_v1::recognize_mser_parallel_4_parallel() {
 	u32 totalUnkonwSize = 0;
 	i32 bad_variance_number = 0;
 
@@ -1411,11 +1415,11 @@ void img_fast_mser::recognize_mser_parallel_4_parallel() {
 	basiclog_info2(sys_strcombine()<<L"m_gray_order_region_size: "<<m_gray_order_region_size);
 }
 
-void img_fast_mser::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
+void img_fast_mser_v1::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
 	extract_pixel_parallel_4(msers, gray_mask);
 }
 
-void img_fast_mser::extract_pixel_parallel_4(img_multi_msers& msers, u8 gray_mask) {
+void img_fast_mser_v1::extract_pixel_parallel_4(img_multi_msers& msers, u8 gray_mask) {
 	if (m_gray_order_region_size <= 0) {
 		return;
 	}
@@ -1428,7 +1432,7 @@ void img_fast_mser::extract_pixel_parallel_4(img_multi_msers& msers, u8 gray_mas
 	extract_pixel_parallel_4_fast(msers, gray_mask);
 }
 
-void img_fast_mser::extract_pixel_parallel_4_simple_parallel_impl(img_multi_msers& msers, u8 gray_mask) {
+void img_fast_mser_v1::extract_pixel_parallel_4_simple_parallel_impl(img_multi_msers& msers, u8 gray_mask) {
 	sys_timer t(L"collect_mser_parallel_4_simple_parallel_impl");
 	t.begin();
 
@@ -1519,7 +1523,7 @@ void img_fast_mser::extract_pixel_parallel_4_simple_parallel_impl(img_multi_mser
 	t.end();
 }
 
-void img_fast_mser::extract_pixel_parallel_4_simple_parallel_impl2(img_multi_msers& msers, u8 gray_mask) {
+void img_fast_mser_v1::extract_pixel_parallel_4_simple_parallel_impl2(img_multi_msers& msers, u8 gray_mask) {
 	sys_timer t(L"collect_mser_parallel_4_simple_parallel_impl2");
 	t.begin();
 
@@ -1632,7 +1636,7 @@ void img_fast_mser::extract_pixel_parallel_4_simple_parallel_impl2(img_multi_mse
 	t.end();
 }
 
-void img_fast_mser::extract_pixel_parallel_4_fast(img_multi_msers& msers, u8 gray_mask) {
+void img_fast_mser_v1::extract_pixel_parallel_4_fast(img_multi_msers& msers, u8 gray_mask) {
 	if (m_gray_order_region_size <= 0) {
 		return;
 	}
@@ -1765,7 +1769,7 @@ void img_fast_mser::extract_pixel_parallel_4_fast(img_multi_msers& msers, u8 gra
 	}
 }
 
-void img_fast_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& msers, u8 gray_mask) {
+void img_fast_mser_v1::extract_pixel_parallel_4_parallel_impl(img_multi_msers& msers, u8 gray_mask) {
 	sys_timer t(L"collect_mser_parallel_4_parallel_impl");
 	t.begin();
 	
@@ -1991,7 +1995,7 @@ void img_fast_mser::extract_pixel_parallel_4_parallel_impl(img_multi_msers& mser
 	t.end();
 }
 
-void img_fast_mser::get_duplicated_regions(vector<mser_region*>& duplicated_regions, mser_region* stable_region, mser_region* begin_region) {
+void img_fast_mser_v1::get_duplicated_regions(vector<mser_region*>& duplicated_regions, mser_region* stable_region, mser_region* begin_region) {
 	mser_region* parentRegion = begin_region->m_parent;
 
 	while (true) {
@@ -2030,7 +2034,7 @@ void img_fast_mser::get_duplicated_regions(vector<mser_region*>& duplicated_regi
 	//duplicated_regions.push_back(parentRegion);
 }
 
-void img_fast_mser::accumulate_comp(connected_comp* comp, linked_point*& point) {
+void img_fast_mser_v1::accumulate_comp(connected_comp* comp, linked_point*& point) {
 	i32 index = (i32)(point - m_linked_points);
 
 	if (comp->m_size > 0) {
@@ -2052,7 +2056,7 @@ void img_fast_mser::accumulate_comp(connected_comp* comp, linked_point*& point) 
 	++point;
 }
 
-void img_fast_mser::merge_comp(connected_comp* comp1, connected_comp* comp2) {	
+void img_fast_mser_v1::merge_comp(connected_comp* comp1, connected_comp* comp2) {	
 	comp1->m_region->m_parent = comp2->m_region;
 	comp2->m_region->m_boundary_region |= comp1->m_region->m_boundary_region;
 
