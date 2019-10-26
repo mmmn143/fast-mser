@@ -12,11 +12,9 @@ VLFeat MSER (VF-MSER): img_vlfeat_mser (original implementation http://www.vlfea
 
 Idiap MSER (ID-MSER): img_idiap_mser (original implementation https://github.com/idiap/mser)
 
-MS-MSER: img_ms_mser
+Fast-MSER V1: img_fast_mser_v1
 
-PPMS-MSER: img_ppms_mser
-
-Fast MSER: img_fast_mser
+Fast MSER V2: img_fast_mser_v2
 
 Note that for channel parallel algorithms (CPCV-MSER, CPCV-MSER+, CPVF-MSER, CPID-MSER and CPMS-MSER), we can use the following codes:
 
