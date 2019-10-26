@@ -357,12 +357,8 @@ void img_fast_mser_v2::make_tree_patch(parallel_info& pinfo, const mt_mat& img, 
 
 					mser_number += 1;
 				} else {
-					//basiclog_assert2(pixel_val == comptr[-1].m_gray_level);
-
 					// keep merging top two comp in stack until the grey level >= pixel_val
 					for ( ; ; ) {
-						//BASICML_ASSERT(pixel_val <= comptr[-1].m_gray_level);
-
 
 						comptr--;
 						(comptr+1)->m_region->m_parent = comptr->m_region;
@@ -373,8 +369,6 @@ void img_fast_mser_v2::make_tree_patch(parallel_info& pinfo, const mt_mat& img, 
 						}
 
 						//Notice that it seems here never can be reached!
-						//BASICML_ASSERT(pixel_val <= comptr[-1].m_gray_level);
-
 						if (pixel_val < comptr[-1].m_gray_level) {
 							// check the stablity here otherwise it wouldn't be an ER
 
@@ -715,7 +709,6 @@ void img_fast_mser_v2::recognize_mser_serial() {
 		}
 	}
 
-	//basiclog_info2(sys_strcombine()<<L"bad_variance_number "<<bad_variance_number);
 	i32 beforeUnkonwSize = totalUnkonwSize;
 
 	if (m_delta > 0 && m_nms_similarity >= 0) {
@@ -731,7 +724,6 @@ void img_fast_mser_v2::recognize_mser_serial() {
 				}
 
 				parent_region = bp.m_data->m_parent;
-				//basiclog_assert2(parent_region == NULL || parent_region->m_region_flag != mser_region::Flag_Merged);
 				if (bp.m_data->m_var >= 0 && parent_region != NULL && parent_region->m_var >= 0 && parent_region->m_gray_level == bp.m_data->m_gray_level + 1) {
 					double subValue = parent_region->m_var - bp.m_data->m_var;
 					if (subValue > m_nms_similarity) {
@@ -1336,7 +1328,6 @@ void img_fast_mser_v2::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
 		return;
 	}
 
-	//extract_pixel_serial(msers, gray_mask);
 	extract_pixel_parallel(msers, gray_mask);
 }
 
@@ -1586,7 +1577,6 @@ void img_fast_mser_v2::extract_pixel_serial(img_multi_msers& msers, u8 gray_mask
 		cur_mser.m_rect.m_height = cur_mser.m_rect.m_height - cur_mser.m_rect.m_top + 1;
 
 		if (cur_mser.m_memory_type == img_mser::Memory_Type_Share) {
-			//cur_mser.m_points -= cur_mser.m_size;	//? cur_mser.m_size - cur_region->m_child_pixel_size
 			pt_offset[i] = cur_mser.m_points - cur_mser.m_size + cur_region->m_child_pixel_size;
 		} else {
 			pt_offset[i] = cur_mser.m_points - 1 - cur_mser.m_size + cur_region->m_child_pixel_size;
@@ -1774,8 +1764,6 @@ void img_fast_mser_v2::extract_pixel_parallel_4_acceleration(img_multi_msers& ms
 
 			for (i32 row = 0; row < height; ++row) {
 				for (i32 col = 0; col < width; ++col) {
-					//mser_region& region = mser_regions.at((*link_points - m_boundary_pixel));
-					//i32 mser_index = region.m_mser_index;			
 					i32 mser_index = region_heap[p][*link_points - m_boundary_pixel];
 					*link_points = mser_index;
 
@@ -1805,8 +1793,6 @@ void img_fast_mser_v2::extract_pixel_parallel_4_acceleration(img_multi_msers& ms
 	block_memory_start_indexes[1] = region_memory_size - self_memory_size[3] - self_memory_size[2] - self_memory_size[1];
 	block_memory_start_indexes[2]= region_memory_size - self_memory_size[3] - self_memory_size[2];
 	block_memory_start_indexes[3]= region_memory_size - self_memory_size[3];
-
-	//basiclog_info2(sys_strcombine()<<block_memory_start_indexes[0]<<L" "<<block_memory_start_indexes[1]<<L" "<<block_memory_start_indexes[2]<<L" "<<block_memory_start_indexes[3]);
 
 	mt_point*& memory = msers.m_memory[(gray_mask == 0) ? 0 : 1];
 	memory = (mt_point*)malloc(sizeof(mt_point) * region_memory_size);
@@ -2007,7 +1993,6 @@ void img_fast_mser_v2::extract_pixel_parallel_4_acceleration(img_multi_msers& ms
 						block_self_pixel_size = cur_mser.m_points[k].m_y - cur_mser.m_points[k].m_x;
 						
 						if (block_self_pixel_size > 0) {
-							//basiclog_info2((cur_mser.m_points[k].m_x + memory)->m_y);
 							memcpy(parent_mser->m_points[0].m_y + memory, cur_mser.m_points[k].m_x + memory, sizeof(mt_point) * block_self_pixel_size);
 							parent_mser->m_points[0].m_y += block_self_pixel_size;
 						}
@@ -2082,8 +2067,6 @@ void img_fast_mser_v2::get_duplicated_regions(vector<mser_region*>& duplicated_r
 		if (NULL == parentRegion) {
 			break;
 		}
-
-		//basiclog_assert2(parentRegion->m_region_flag != mser_region::Flag_Merged);
 
 		if (parentRegion->m_size > m_max_point) {
 			//如果父亲节点较大,无须在寻找重复的父亲,因为父亲注定会被删掉
