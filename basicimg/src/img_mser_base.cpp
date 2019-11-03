@@ -111,7 +111,8 @@ void img_mser_base::extract(img_multi_msers& res, const mt_mat& gray_src, const 
 	sys_alg_analyzer::max_(L"running_memory", m_channel_total_running_memory / 1024 / 1024);
 
 	sys_alg_analyzer::add(L"mser_number", res.m_msers[0].size() + res.m_msers[1].size());
-	sys_alg_analyzer::add(L"mser_memory", res.m_memory_size[0] + res.m_memory_size[1]);
+	sys_alg_analyzer::add(L"mser_pt_number", res.m_memory_size[0] + res.m_memory_size[1]);
+	sys_alg_analyzer::add(L"mser_memory", (res.m_memory_size[0] + res.m_memory_size[1]) * sizeof(mt_point) / 1024 / 1024);
 }
 
 img_mser_base* img_mser_alg_factory::new_instance() {
