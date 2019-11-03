@@ -82,7 +82,7 @@ namespace basicimg {
 			m_from_min_max[0] = sys_true;
 			m_from_min_max[1] = sys_true;
 
-			m_recursive_point_threshold = 100;
+			m_recursive_point_threshold = 20;
 			m_parallel_thread_number = 4;
 
 			m_channel_total_running_memory = 0;
