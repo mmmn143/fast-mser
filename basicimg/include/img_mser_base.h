@@ -1,20 +1,27 @@
+/**
+* Define the result type and the base class of all  MSER algorithms.
+*/
+
 #pragma once
 
 #include "img_connected_component.h"
 
 namespace basicimg {
 
+	/**
+	* Define the MSER data-structure in the result of MSER detection.
+	*/
 	class img_mser {
 	public:
 
 		enum Memory_Type {
-			Memory_Type_Moments,
-			Memory_Type_Self,
-			Memory_Type_Share,
-			Memory_Type_Recursive,
-			Memory_Type_Share_Parallel_4,
-			Memory_Type_Recursive_Parallel_4,
-			Memory_Type_Range,
+			Memory_Type_Moments,	// For Idiap MSER (ID-MSER) and VLFeat MSER (VF-MSER), they only extract moment information of an MSER
+			Memory_Type_Self,	// Used in OpenCV MSER (CV-MSER)
+			Memory_Type_Share,	// Used in CV-MSER+
+			Memory_Type_Recursive,	// Used in Fast MSER V2
+			Memory_Type_Share_Parallel_4, // Used in Fast MSER V1
+			Memory_Type_Recursive_Parallel_4, // Used in Fast MSER V2
+			Memory_Type_Range,	// Used in Fast MSER V1
 		};
 
 		img_mser() {
@@ -37,6 +44,9 @@ namespace basicimg {
 		mt_rect m_rect;
 	};
 
+	/**
+	* Define the result type of MSER detection.
+	*/
 	class img_multi_msers {
 	public:
 		img_multi_msers() {
@@ -55,16 +65,19 @@ namespace basicimg {
 
 		void operator = (const img_multi_msers& other);
 
-		vector<img_mser> m_msers[2];
-		mt_point* m_memory[2];
-		i32 m_memory_size[2];
+		vector<img_mser> m_msers[2];	// Correspond to two process passes, dark to light and light to dark
+		mt_point* m_memory[2];		// Memory
+		i32 m_memory_size[2];		// Memory size
 	};
 
 	/**
-	m_delta = 0, ER
-	m_delta > 0, m_stable_variation = FLT_MAX, nms_similarity = -1, ER
-	m_delta > 0, m_stable_variation < FLT_MAX, nms_similarity = -1, SER
-	m_delta > 0, m_stable_variation < FLT_MAX, nms_similarity != -1, MSER
+	* Define the base class of all MSER algorithms.
+	*
+	* Note that an MSER algoritm can degenerate to an ER algorithm by the following settings: 
+	* m_delta = 0, ER
+	* m_delta > 0, m_stable_variation = FLT_MAX, nms_similarity = -1, ER
+	* m_delta > 0, m_stable_variation < FLT_MAX, nms_similarity = -1, SER
+	* m_delta > 0, m_stable_variation < FLT_MAX, nms_similarity != -1, MSER
 	*/
 	class img_mser_base {
 	public:
@@ -141,14 +154,41 @@ namespace basicimg {
 			return m_parallel_thread_number;
 		}
 
+		/**
+		* Extract MSERs from an image.
+		*
+		* @param res Rsults of MSER detections.
+		* @param gray_src Source image. It should be a gray-scale image.
+		* @param mask A mask image defining which pixels should be ignored during the detecting process.
+		*/
 		void extract(img_multi_msers& res, const mt_mat& gray_src, const img_mask_info<u8>& mask = img_mask_info<u8>());
+		
+		/**
+		* Clear memory cache. When an MSER algorithm detects MSERs in an image, it needs to allocate memory for some data-structures.
+		* If you want to use an MSER algorithm instance to process several images, you may not call this method.
+		*/
 		virtual void clear_memory_cache() {}
 
 	protected:
 
+		/**
+		* Allocate memory in the algorithm initialization stage.
+		*/
 		virtual void allocate_memory(const mt_mat& src, const img_mask_info<u8>& mask) = 0;
+
+		/**
+		* Build component trees in the component tree construction stage.
+		*/
 		virtual void build_tree(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask) = 0;
+
+		/**
+		* Recognize MSERs in the MSER recognition stage.
+		*/
 		virtual void recognize_mser() = 0;
+		
+		/**
+		* Extract pixels in MSERs in the pixel extraction stage.
+		*/
 		virtual void extract_pixel(img_multi_msers& msers, u8 gray_mask) = 0;
 		
 
@@ -157,20 +197,23 @@ namespace basicimg {
 		f32 m_stable_variation;	// When m_stable_variation equals FLT_MAX, all ERs are MSERs.
 
 		f32 m_nms_similarity;	// When m_nms_similarity equals -1, local minimal suppression will not be applied
-		img_Connected_Type m_connected_type;
-		i32 m_min_point;
+		img_Connected_Type m_connected_type;	// Can be either 4-connected or 8-connected
+		i32 m_min_point;	
 		f32 m_max_point_ratio;
 		i32 m_max_point;
 
 		b8 m_from_min_max[2];
 
-		i32 m_recursive_point_threshold;
-		u32 m_channel_total_pixel_number;
-		u64 m_channel_total_running_memory;
+		i32 m_recursive_point_threshold;	// Used in Fast MSER V2
+		u32 m_channel_total_pixel_number;	// Statistic information
+		u64 m_channel_total_running_memory;	// Statistic information
 
 		i32 m_parallel_thread_number;	// only valid for parallel MSER algorithms
 	};
 
+	/**
+	* A factory class for creating designated MSER algorithms.
+	*/
 	class img_mser_alg_factory {
 	public:
 
