@@ -3,6 +3,9 @@
 
 using namespace basicsys;
 
+/**
+* Select a configuration.
+*/
 static void set_config(img_mser_base* alg) {
 	//TextDetection
 	alg->set_duplicated_variation(0.1f);
@@ -16,7 +19,7 @@ static void set_config(img_mser_base* alg) {
 }
 
 
-static void eval_pp(const mt_mat& src, img_mser_alg_factory* factory) {
+static void eval(const mt_mat& src, img_mser_alg_factory* factory) {
 	mt_mat srcs[4];
 
 	if (src.channel() == 1) {
@@ -95,18 +98,27 @@ static void eval_cp(const mt_mat& src, img_mser_alg_factory* factory) {
 
 void img_mser_test::run(vector<wstring>& argvs) {
 	mt_helper::enable_omp_mkl(sys_true);
-
 	sys_alg_analyzer::init();
 
+	// Load a gray-scale image from a given path
 	mt_mat gray_test_image = img_img::load(L"G:/study_project/matel_resource/mser dataset/realword/10077696/img_19.png", img_img::Load_Grayscale);
 
-
+	
 	log_logger::get_logger()->enable_info(false);
 	log_logger::get_logger()->enable_debug(false);
 	log_logger::get_logger()->enable_warning(false);
 
+	// Create a designated MSER algorithm factory. Here is an example of creating a Fast MSER V2 algorithm factory.
 	img_mser_alg_factory* factory = new img_mser_alg_factory(typeid(img_fast_mser_v2).name());
 
-	eval_pp(gray_test_image, factory);
+	// Evaluate an MSER algorithm.
+	eval(gray_test_image, factory);
+	
+	// Evaluate channel parallel algorithm. Note that Fast MSER V1 and V2 can not evaluated by this method because they are partition parallel algorithms.
+	//eval_cp(gray_test_image, factory);
+	
 	sys_alg_analyzer::release();
+	
+	// Delete factory
+	delete factory;
 }
