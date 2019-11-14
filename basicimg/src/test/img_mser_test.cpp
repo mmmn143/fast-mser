@@ -4,19 +4,15 @@
 using namespace basicsys;
 
 static void set_config(img_mser_base* alg) {
-	//alg->set_stable_delta(0);
-	//alg->set_duplicated_variation(-1);
-	//alg->set_min_max_point(0, 1.0f);
-	//alg->set_nms_similarity(-1);
-	//alg->set_duplicated_variation(-1);
-	//alg->set_stable_max_variation(FLT_MAX);
-	//alg->set_stable_delta(5);
-	
+	//TextDetection
+	alg->set_duplicated_variation(0.1f);
+	alg->set_stable_max_variation(0.5f);
+	alg->set_stable_delta(1);
+
+	// DetectorEval
 	//alg->set_duplicated_variation(0.2f);
 	//alg->set_stable_max_variation(0.25f);
 	//alg->set_stable_delta(5);
-
-	//alg->set_recursive_point_threshold(20);
 }
 
 
