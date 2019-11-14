@@ -16,7 +16,7 @@ Fast-MSER V1: img_fast_mser_v1
 
 Fast MSER V2: img_fast_mser_v2
 
-Note that for channel parallel algorithms (CPCV-MSER, CPCV-MSER+, CPVF-MSER, CPID-MSER and CPMS-MSER), we can use the following codes:
+Note that for channel parallel algorithms (CPCV-MSER, CPCV-MSER+, CPVF-MSER, CPID-MSER), we can use the following codes:
 
 img_mser_base* mser = new img_idiap_mser(); // or other mser algorithms
 
