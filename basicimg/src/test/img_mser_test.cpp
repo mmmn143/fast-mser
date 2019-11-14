@@ -18,8 +18,12 @@ static void set_config(img_mser_base* alg) {
 	//alg->set_stable_delta(5);
 }
 
-
+/**
+* Evaluate an MSER algorithm. We can evaluate CV-MSER, CV-MSER+, VF-MSER, ID-MSER, Fast MSER V1 and Fast MSER V2.
+*/
 static void eval(const mt_mat& src, img_mser_alg_factory* factory) {
+	// We would like to compare channel parallel MSER algorithms on our computer with 4 CPU cores, i.e. executing a thread on each core.
+	// Thus, we need 4 channels for channel parallel MSER algorithms.
 	mt_mat srcs[4];
 
 	if (src.channel() == 1) {
@@ -29,7 +33,8 @@ static void eval(const mt_mat& src, img_mser_alg_factory* factory) {
 			srcs[i] = src.channel_at(i).clone();
 		}
 
-		srcs[3] = srcs[0];
+		// Add a gray-scale channel
+		srcs[3] = img_img::cvt_color(src, img_img::Color_Covert_Type_BGR2Gray);
 	}
 
 	img_mser_base* mser = factory->new_instance();
@@ -58,7 +63,13 @@ static void eval(const mt_mat& src, img_mser_alg_factory* factory) {
 	delete mser;
 }
 
+/**
+* Evaluate an channel parallel MSER algorithm. We can evaluate CPCV-MSER, CPCV-MSER+, CPVF-MSER, CPID-MSER.
+* As Fast MSER V1 and V2 are partition parallel algorithms, we can not evaluate them using this method.
+*/
 static void eval_cp(const mt_mat& src, img_mser_alg_factory* factory) {
+	// We would like to compare channel parallel MSER algorithms on our computer with 4 CPU cores, i.e. executing a thread on each core.
+	// Thus, we need 4 channels for channel parallel MSER algorithms.
 	mt_mat srcs[4];
 
 	if (src.channel() == 1) {
@@ -68,7 +79,8 @@ static void eval_cp(const mt_mat& src, img_mser_alg_factory* factory) {
 			srcs[i] = src.channel_at(i).clone();
 		}
 
-		srcs[3] = srcs[0];
+		// Add a gray-scale channel
+		srcs[3] = img_img::cvt_color(src, img_img::Color_Covert_Type_BGR2Gray);
 	}
 
 	img_mser_base* mser = factory->new_instance();
@@ -117,8 +129,8 @@ void img_mser_test::run(vector<wstring>& argvs) {
 	// Evaluate channel parallel algorithm. Note that Fast MSER V1 and V2 can not evaluated by this method because they are partition parallel algorithms.
 	//eval_cp(gray_test_image, factory);
 	
-	sys_alg_analyzer::release();
-	
 	// Delete factory
 	delete factory;
+	
+	sys_alg_analyzer::release();
 }
