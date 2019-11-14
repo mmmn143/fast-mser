@@ -30,6 +30,9 @@ for (i32 i = 0; i < 4; ++i) {
 
 }
 
+## Examples of Runing an MSER algorithm
+You can find the examples of how to run a MSER algorithm in the code: basicimg/src/test/img_mser_test.cpp 
+
 ## Build
 
 ### Requires:
