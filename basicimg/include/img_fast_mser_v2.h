@@ -1,3 +1,9 @@
+/** @file img_fast_mser_v1.h
+
+The Fast MSER V2 algorithm.
+We use an existing sub-tree merging algorithm and propose a novel pixel extraction algorithm to accelerate MSER detection. See details in our paper.
+*/
+
 #pragma once
 
 #include "img_mser_base.h"
@@ -12,8 +18,6 @@ namespace basicimg {
 		~img_fast_mser_v2();
 
 	protected:
-
-		void  inner_extract(img_multi_msers& res, const mt_mat& gray_src, const img_mask_info<u8>& mask);
 
 		void clear_memory_cache();
 
