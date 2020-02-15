@@ -1,4 +1,6 @@
-# Fast MSER
+# Fast MSER 
+
+Note that this branch is used as supplement for our paper. Code can not be modified until the end of the paper review. More extensions (e.g., support for 2-threads, 4-threads, 8-threads, 16-threads and 32-threads) will be updated at the end of the review.
 
 
 ## Algorithms and Codes 
