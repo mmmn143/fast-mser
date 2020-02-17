@@ -35,6 +35,10 @@ for (i32 i = 0; i < 4; ++i) {
 ## Examples of Runing an MSER algorithm
 You can find the examples of how to run a MSER algorithm in the code: basicimg/src/test/img_mser_test.cpp 
 
+## Performance w.r.t. Different deltas
+
+![image](https://github.com/mmmn143/fast-mser/blob/master/images/delta_text_detection_icdar.png)
+
 ## Build
 
 ### Requires:
