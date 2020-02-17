@@ -37,6 +37,9 @@ You can find the examples of how to run a MSER algorithm in the code: basicimg/s
 
 ## Performance w.r.t. Different deltas
 
+Compared to CV-MSER+, the speed-ups of Fast MSER V1 w.r.t. different deltas (from 1 to 5) are 3.5, 3.3, 3.2, 3.1, 3.1, respectively.
+Compared to CV-MSER+, the speed-ups of Fast MSER V2 w.r.t. different deltas (from 1 to 5) are 3.2, 3.2, 3.2, 3.1, 3.0, respectively.
+Thus, the larger delta, the smaller speed-up.
 ![image](https://github.com/mmmn143/fast-mser/blob/master/images/delta_text_detection_icdar.png)
 
 ## Build
