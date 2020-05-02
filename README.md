@@ -46,23 +46,22 @@ Thus, the larger delta, the smaller speed-up.
 
 ## Build
 
-### Development environment:
-#### Windows
+### Windows
 
-OpenCV 3.41
+#### OpenCV 3.41
 
 We have included the head files and the static library of OpenCV 3.41 in basic_thrid_libs/lib_opencv/341.
 The dynamic library of OpenCV 3.41 is in bin/x64/vc11/opencv_world341.zip. You can unzip opencv_world341.zip to get opencv_world341.dll. Note that opencv_world341.dll must be placed under bin/x64/vc11/.
 
-Visual Studio 2012 (Release configuration, X64 platform)
+#### Visual Studio 2012 (Release configuration, X64 platform)
 
 Open all_projects.sln and build it, then you can test the comparison MSER algorithms.
 
-#### MacOS
+### MacOS
 
-OpenCV 3
+#### OpenCV 3
 
-CLion
+#### CLion
 
 ## FAQ
 If you have any questions about how to build this project, please tell me in 'Issues'.
