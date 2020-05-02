@@ -1,7 +1,9 @@
 # Fast MSER 
 
-Note that this branch is used as supplement for our paper. Due to conference policy, code can not be modified until the end of the paper review. More extensions (e.g., support for 2-threads, 4-threads, 8-threads, 16-threads and 32-threads) have been developed and will be updated at the end of the review.
+## News (2020/05/02)
+- We support our algorithms on MACOS (however, OpenMP is not supported well in MACOS)
 
+- Fast MSER V1 supports 1, 2, 4, 8, 16 and 32 threads. Fast MSER V2 supports 1, 4 and 32 threads.
 
 ## Algorithms and Codes 
 All codes are in the directory of basicimg.
@@ -14,9 +16,9 @@ VLFeat MSER (VF-MSER): img_vlfeat_mser (original implementation http://www.vlfea
 
 Idiap MSER (ID-MSER): img_idiap_mser (original implementation https://github.com/idiap/mser)
 
-Fast-MSER V1: img_fast_mser_v1 (supporting 4-threads. 32-threads will be supported as soon as possible)
+Fast-MSER V1: img_fast_mser_v1 (supporting 1-threads, 2-threads, 4-threads, 8-threads, 16-threads and 32-threads)
 
-Fast MSER V2: img_fast_mser_v2 (supporting 4-threads and 32-threads)
+Fast MSER V2: img_fast_mser_v2 (supporting 1-threads, 4-threads and 32-threads)
 
 Note that for channel parallel algorithms (CPCV-MSER, CPCV-MSER+, CPVF-MSER, CPID-MSER), we can use the following codes:
 
@@ -33,7 +35,7 @@ for (i32 i = 0; i < 4; ++i) {
 }
 
 ## Examples of Runing an MSER algorithm
-You can find the examples of how to run a MSER algorithm in the code: basicimg/src/test/img_mser_test.cpp 
+You can find the examples of how to run a MSER algorithm in the code: basicimg/test/img_mser_test.cpp 
 
 ## Performance w.r.t. Different deltas
 
