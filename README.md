@@ -1,7 +1,7 @@
 # Fast MSER 
 
 ## News (2020/05/02)
-- We support our algorithms on MACOS (however, OpenMP is not supported well in MACOS)
+- We support our algorithms on MacOS (however, OpenMP is not supported well in MacOS)
 
 - Fast MSER V1 supports 1, 2, 4, 8, 16 and 32 threads. Fast MSER V2 supports 1, 4 and 32 threads.
 
@@ -46,19 +46,23 @@ Thus, the larger delta, the smaller speed-up.
 
 ## Build
 
-### Requires:
+### Development environment:
+#### Windows
 
 OpenCV 3.41
 
 We have included the head files and the static library of OpenCV 3.41 in basic_thrid_libs/lib_opencv/341.
 The dynamic library of OpenCV 3.41 is in bin/x64/vc11/opencv_world341.zip. You can unzip opencv_world341.zip to get opencv_world341.dll. Note that opencv_world341.dll must be placed under bin/x64/vc11/.
 
-### Development environment:
-Windows
-
 Visual Studio 2012 (Release configuration, X64 platform)
 
 Open all_projects.sln and build it, then you can test the comparison MSER algorithms.
+
+#### MacOS
+
+OpenCV 3
+
+CLion
 
 ## FAQ
 If you have any questions about how to build this project, please tell me in 'Issues'.
