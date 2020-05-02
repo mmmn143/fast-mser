@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\basiclog\helper.h" />
     <ClInclude Include="..\..\include\basiclog.h" />
+    <ClInclude Include="..\..\src\helper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\basiclog.cpp" />

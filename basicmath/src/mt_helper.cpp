@@ -131,6 +131,202 @@ u32 mt_helper::one_number(u32 value) {
 	return res;
 } 
 
+i32 mt_helper::add_five(i32 val) {
+	char s[32];
+#ifdef _WIN32
+	if (val < 0) {
+		sprintf_s(s, "%d", -val);
+	} else {
+		sprintf_s(s, "%d", val);
+	}
+#else
+	if (val < 0) {
+		sprintf(s, "%d", -val);
+	} else {
+		sprintf(s, "%d", val);
+	}
+#endif
+
+	int len = (i32)strlen(s);
+	i32 i = 0;
+	for (; i < len; ++i) {
+		if (val >= 0) {
+			if (s[i] < '5') {
+				// stop
+				break;
+			}
+		} else {
+			if (s[i] > '5') {
+				// stop
+				break;
+			}
+		}
+	}
+
+	for (i32 j = len; j >= i; --j) {
+		s[j + 1] = s[j];
+	}
+
+	s[i] = '5';
+
+	return val < 0 ? -atoi(s) : atoi(s);
+}
+
+string mt_helper::max_lexi_order(const string& val) {
+	if ((i32)val.size() <= 1) {
+		return "";
+	}
+
+	string res = val;
+	i32 i = 0;
+
+	for (; i < (i32)val.size() - 1; ++i) {
+		if (val[i] > val[i + 1]) {
+			break;
+		}
+	}
+
+	res.erase(res.begin() + i);
+	return res;
+}
+
+string mt_helper::battle_ship(const string& ships, const string& hits) {
+	struct ship {
+
+		vector<mt_point> points;
+		vector<int> hit_flags;
+
+		void hit(const mt_point& p) {
+			for (i32 i = 0; i < (i32)points.size(); ++i) {
+				if (points[i] == p) {
+					hit_flags[i] = 1;
+				}
+			}
+		}
+
+		b8 is_destory() {
+			for (i32 i = 0; i < (i32)hit_flags.size(); ++i) {
+				if (hit_flags[i] == 0) {
+					return sys_false;
+				}
+			}
+
+			return sys_true;
+		}
+
+		b8 is_hit() {
+			for (i32 i = 0; i < (i32)hit_flags.size(); ++i) {
+				if (hit_flags[i] == 1) {
+					return sys_true;
+				}
+			}
+
+			return sys_false;
+		}
+	};
+
+	vector<string> shipItems;
+
+	sys_strhelper::split(shipItems, ships, ";");
+
+	vector<ship> shipData;
+
+	for (i32 i = 0; i < (i32)shipItems.size(); ++i) {
+		vector<string> pointItems;
+		sys_strhelper::split(pointItems, shipItems[i], ",");
+
+		ship s;
+
+		i32 top = pointItems[0][0] - '1';
+		i32 left = pointItems[0][1] - 'A';
+
+		i32 bottom = pointItems[1][0] - '1';
+		i32 right = pointItems[1][1] - 'A';
+
+		for (i32 r = top; r <= bottom; ++r) {
+			for (i32 c = left; c <= right; ++c) {
+				s.points.push_back(mt_point(c, r));
+				s.hit_flags.push_back(0);
+			}
+		}
+
+		shipData.push_back(s);
+	}
+
+	vector<string> hitItems;
+
+	sys_strhelper::split(hitItems, hits, ",");
+
+	for (i32 i = 0; i < (i32)hitItems.size(); ++i) {
+		i32 y = hitItems[i][0] - '1';
+		i32 x = hitItems[i][1] - 'A';
+
+		for (i32 j = 0; j < (i32)shipData.size(); ++j) {
+			shipData[j].hit(mt_point(x, y));
+		}
+	}
+
+	i32 destoryCnt = 0;
+	i32 hitCnt = 0;
+
+	for (i32 j = 0; j < (i32)shipData.size(); ++j) {
+		if (shipData[j].is_destory()) {
+			++destoryCnt;
+		} else if (shipData[j].is_hit()) {
+			++hitCnt;
+		}
+	}
+
+	return (sys_strcombine()<<destoryCnt<<","<<hitCnt);
+}
+
+void mt_helper::split_array_to_max_mean_sub_arrays(vector<i32>& a, vector<i32>&b , const vector<i32>& input_data) {
+	if (input_data.empty()) {
+		return;
+	}
+
+	vector<i32> data = input_data;
+	sort(data.begin(), data.end());
+
+	i32 left_sum = 0;
+	f32 max_sub = -FLT_MAX;
+	i32 split_index = -1;
+
+	a.resize(data.size());
+
+	i32 right_sum = 0;
+
+	for (i32 i = (i32)data.size() - 1; i >= 0; --i) {
+		right_sum += data[i];
+
+		a[i] = right_sum / ((i32)data.size()  - i);
+	}
+
+	for (i32 i = 0; i < (i32)data.size() - 1; ++i) {
+		left_sum += data[i];
+
+		i32 right_mean = a[i + 1];
+		f32 left_mean = left_sum / (f32)(i + 1);
+
+		if (right_mean - left_mean > max_sub) {
+			max_sub = right_mean - left_mean;
+
+			split_index = i;
+		}
+	}
+
+	b.reserve(split_index + 1);
+
+	for (i32 i = 0; i <= split_index; ++i) {
+		b.push_back(data[i]);
+	}
+
+	a.clear();
+	for (i32 i = split_index + 1; i < (i32)data.size(); ++i) {
+		a.push_back(data[i]);
+	}
+}
+
 /**
 #pragma omp parallel for num_threads(omp_get_max_threads()) is equivalent to #pragma omp parallel for.
 */

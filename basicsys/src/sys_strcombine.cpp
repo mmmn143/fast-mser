@@ -3,86 +3,81 @@
 #include "sys_strcombine.h"
 
 
-sys_strcombine::operator wstring() const {
+sys_strcombine::operator string() const {
 	return m_text;
 }
 
 sys_strcombine& sys_strcombine::operator <<(int value)  {
-	m_text += sys_strhelper::combine(L"%d", value);
+	m_text += sys_strhelper::combine("%d", value);
 
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator <<(unsigned int value)  {
-	m_text += sys_strhelper::combine(L"%u", value);
+	m_text += sys_strhelper::combine("%u", value);
 
 	return *this;
 }
 
 
 sys_strcombine& sys_strcombine::operator <<(char value)  {
-	m_text += sys_strhelper::combine(L"%d", value);
+	m_text += sys_strhelper::combine("%c", value);
 
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator <<(uint8_t value)  {
-	m_text += sys_strhelper::combine(L"%u", value);
+	m_text += sys_strhelper::combine("%u", value);
 
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator <<(short value)  {
-	m_text += sys_strhelper::combine(L"%d", value);
+	m_text += sys_strhelper::combine("%d", value);
 
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator <<(unsigned short value)  {
-	m_text += sys_strhelper::combine(L"%u", value);
+	m_text += sys_strhelper::combine("%u", value);
 
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator <<(float value)  {
-	m_text += sys_strhelper::combine(L"%.7f", value);
+	m_text += sys_strhelper::combine("%.7f", value);
 
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator <<(double value)  {
-	m_text += sys_strhelper::combine(L"%.16f", value);
-	return *this;
-}
-
-sys_strcombine& sys_strcombine::operator <<(wchar_t character)  {
-	m_text += sys_strhelper::combine(L"%c", character);
+	m_text += sys_strhelper::combine("%.16f", value);
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator <<(b8 value)  {
-	m_text += value ? L"true" : L"false";
+	m_text += value ? "true" : "false";
 	return *this;
 }
 
-sys_strcombine& sys_strcombine::operator <<(const wchar_t* text)  {
+sys_strcombine& sys_strcombine::operator <<(const char* text)  {
 	m_text += text;
 	return *this;
 }
 
-sys_strcombine& sys_strcombine::operator <<(const wstring& text)  {
+sys_strcombine& sys_strcombine::operator <<(const string& text)  {
 	m_text += text;
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator<<(int64_t value) {
-	m_text += sys_strhelper::combine(L"%lld", value);
+	m_text += sys_strhelper::combine("%lld", value);
 
 	return *this;
 }
 
 sys_strcombine& sys_strcombine::operator<<(uint64_t value) {
-	m_text += sys_strhelper::combine(L"%llu", value);
+	m_text += sys_strhelper::combine("%llu", value);
 
 	return *this;
 }

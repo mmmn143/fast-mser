@@ -306,15 +306,15 @@ void mt_array_index_iterator::all_index(vector<vector<i32>>& all_indexes) const 
 	}
 }
 
-mt_array_element_iterator::mt_array_element_iterator(u8* data, int ndims, const int* sizes, const int* steps, int element_size) {
+mt_array_element_const_iterator::mt_array_element_const_iterator(const u8* data, int ndims, const int* sizes, const int* steps, int element_size) {
 	init_construct(data, ndims, sizes, steps, element_size);
 }
 
-mt_array_element_iterator::mt_array_element_iterator(mt_mat& mat) {
+mt_array_element_const_iterator::mt_array_element_const_iterator(const mt_mat& mat) {
 	init_construct(mat.data(), mat.dim(), mat.size(), mat.step(), mat.element_channel_size());
 }
 
-void mt_array_element_iterator::init_construct(u8* data, int ndims, const int* sizes, const int* steps, int element_size) {
+void mt_array_element_const_iterator::init_construct(const u8* data, int ndims, const int* sizes, const int* steps, int element_size) {
 	m_dims = ndims;
 
 	m_sizes = sizes;
@@ -333,7 +333,7 @@ void mt_array_element_iterator::init_construct(u8* data, int ndims, const int* s
 	m_element_size = element_size;
 }
 
-u8* mt_array_element_iterator::data() {
+const u8* mt_array_element_const_iterator::data() {
 	if (m_accessed_count == 0) {
 		++m_accessed_count;
 		return m_ptr_dim_datas[m_dims - 1];
@@ -362,27 +362,27 @@ u8* mt_array_element_iterator::data() {
 	return m_ptr_dim_datas[m_dims - 1];
 }
 
-mt_array_element_const_iterator::mt_array_element_const_iterator(const u8* data, int ndims, const int* sizes, const int* steps, int element_size) 
-: mt_array_element_iterator(const_cast<u8*>(data), ndims, sizes, steps, element_size) {
+mt_array_element_iterator::mt_array_element_iterator(u8* data, int ndims, const int* sizes, const int* steps, int element_size) 
+: mt_array_element_const_iterator(data, ndims, sizes, steps, element_size) {
 }
 
-mt_array_element_const_iterator::mt_array_element_const_iterator(const mt_mat& mat) 
-	: mt_array_element_iterator(*(const_cast<mt_mat*>(&mat))) {
+mt_array_element_iterator::mt_array_element_iterator(mt_mat& mat) 
+	: mt_array_element_const_iterator(mat) {
 }
 
-const u8* mt_array_element_const_iterator::data() {
-	return __super::data();
+u8* mt_array_element_iterator::data() {
+	return const_cast<u8*>(mt_array_element_const_iterator::data());
 }
 
-mt_array_memory_block_iterator::mt_array_memory_block_iterator(u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size) {
+mt_array_memory_block_const_iterator::mt_array_memory_block_const_iterator(const u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size) {
 	init_construct(data, ndims, sizes, steps, dim, element_size);
 }
 
-void mt_array_memory_block_iterator::init_construct(u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size) {
+void mt_array_memory_block_const_iterator::init_construct(const u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size) {
 	if (dim == ndims) {
 		m_block_element_number = 1;
 		m_element_step = element_size;
-		m_element_iterator = mt_array_element_iterator(data, ndims, sizes, steps, element_size);
+		m_element_iterator = mt_array_element_const_iterator(data, ndims, sizes, steps, element_size);
 	} else {
 		m_block_element_number = 1;
 		for (int i = dim; i < ndims; ++i) {
@@ -399,20 +399,20 @@ void mt_array_memory_block_iterator::init_construct(u8* data, int ndims, const i
 			int size = 1;
 			int step = steps[dim] * sizes[dim];
 
-			m_element_iterator = mt_array_element_iterator(data, 1, &size, &step, element_size);
+			m_element_iterator = mt_array_element_const_iterator(data, 1, &size, &step, element_size);
 		} else {
-			m_element_iterator = mt_array_element_iterator(data, dim, sizes, steps, element_size);
+			m_element_iterator = mt_array_element_const_iterator(data, dim, sizes, steps, element_size);
 		}	
 	}
 }
 
-mt_array_memory_block_iterator::mt_array_memory_block_iterator(mt_mat& mat) {
+mt_array_memory_block_const_iterator::mt_array_memory_block_const_iterator(const mt_mat& mat) {
 	int continious_dim = mt_array_iteration::get_continuous_dim(mat.dim(), mat.size(), mat.step(), mat.depth());
 	init_construct(mat.data(), mat.dim(), mat.size(), mat.step(), continious_dim, mat.element_channel_size());
 }
 
-u8* mt_array_memory_block_iterator::data() {
-	u8* ptr_data = m_element_iterator.data();
+const u8* mt_array_memory_block_const_iterator::data() {
+	const u8* ptr_data = m_element_iterator.data();
 
 	if (ptr_data == NULL) {
 		return NULL;
@@ -425,30 +425,34 @@ u8* mt_array_memory_block_iterator::data() {
 	return ptr_data;
 }
 
-u8* mt_array_memory_block_iterator::memory_start() {
+const u8* mt_array_memory_block_const_iterator::memory_start() {
 	return m_element_iterator.data();
 }
 
-int mt_array_memory_block_iterator::block_number() const {
+int mt_array_memory_block_const_iterator::block_number() const {
 	return m_element_iterator.element_number();
 }
 
-int mt_array_memory_block_iterator::block_size() const {
+int mt_array_memory_block_const_iterator::block_size() const {
 	return m_block_element_number * abs(m_element_step);
 }
 
-int mt_array_memory_block_iterator::block_element_number() const {
+int mt_array_memory_block_const_iterator::block_element_number() const {
 	return m_block_element_number;
 }
 
-mt_array_memory_block_const_iterator::mt_array_memory_block_const_iterator(const u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size) 
-	: mt_array_memory_block_iterator(const_cast<u8*>(data), ndims, sizes, steps, dim, element_size) {
+mt_array_memory_block_iterator::mt_array_memory_block_iterator(u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size) 
+	: mt_array_memory_block_const_iterator(const_cast<u8*>(data), ndims, sizes, steps, dim, element_size) {
 }
 
-mt_array_memory_block_const_iterator::mt_array_memory_block_const_iterator(const mt_mat& mat) 
-	: mt_array_memory_block_iterator(*(const_cast<mt_mat*>(&mat))) {
+mt_array_memory_block_iterator::mt_array_memory_block_iterator(mt_mat& mat) 
+	: mt_array_memory_block_const_iterator(mat) {
 }
 
-const u8* mt_array_memory_block_const_iterator::data() {
-	return __super::data();
+u8* mt_array_memory_block_iterator::data() {
+	return const_cast<u8*>(mt_array_memory_block_const_iterator::data());
+}
+
+u8* mt_array_memory_block_iterator::memory_start() {
+	return const_cast<u8*>(mt_array_memory_block_const_iterator::memory_start());
 }

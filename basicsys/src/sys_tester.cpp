@@ -18,9 +18,9 @@ sys_tester::~sys_tester() {
 		if (m_total_case_number > 0) {
 			double correct_ratio = m_correct_case_number / (double)m_total_case_number;
 
-			basiclog_info(L"sys_tester", sys_strcombine()<<L"total case: "<<m_total_case_number<<L" correct case: "<<m_correct_case_number<<L" correct ratio: "<<correct_ratio);
+			basiclog_info("sys_tester", sys_strcombine()<<"total case: "<<m_total_case_number<<" correct case: "<<m_correct_case_number<<" correct ratio: "<<correct_ratio);
 		} else {
-			basiclog_info(L"sys_tester", L"no test case");
+			basiclog_info("sys_tester", "no test case");
 		}
 	}
 }
@@ -28,7 +28,7 @@ sys_tester::~sys_tester() {
 void sys_tester::init(Test_Type type /* = Test_Type_Slience */) {
 	mt_tester_instance = new sys_tester();
 	mt_tester_instance->m_test_type = type;
-	basiclog_info(L"sys_tester", L"init sys_tester");
+	basiclog_info("sys_tester", "init sys_tester");
 }
 
 sys_tester* sys_tester::get_instance() {

@@ -282,7 +282,7 @@ void mt_mat::conv(mt_mat& res, const mt_mat& kernel, mt_Conv_Boundary_Type bound
 	basicmath_mat_release(temp_strides);
 	basicmath_mat_release(res_steps);
 
-	if (m_auto_derivative != NULL && m_auto_derivative->math_operation_recorded()) {
+	if (m_auto_derivative != NULL && m_auto_derivative->stage() == mt_auto_derivative::Stage_Record_Computing) {
 		res.m_auto_derivative = m_auto_derivative;
 		kernel.m_auto_derivative = m_auto_derivative;
 

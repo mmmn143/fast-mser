@@ -1,6 +1,3 @@
-// Please see https://github.com/idiap/mser for its original implementation.
-
-
 #include "stdafx.h"
 #include "img_idiap_mser.h"
 
@@ -16,8 +13,11 @@ img_idiap_mser::~img_idiap_mser() {
 
 void img_idiap_mser::clear_memory_cache() {
 	m_src = mt_mat();
-	pool_.swap(vector<mser_region>());
-	m_accessible.swap(vector<b8>());
+
+	vector<mser_region> temp;
+	pool_.swap(temp);
+	vector<b8> temp2;
+	m_accessible.swap(temp2);
 }
 
 img_idiap_mser::mser_region::mser_region(u16 level, i32 pixel) : level_(level), pixel_(pixel), area_(0),
@@ -474,7 +474,7 @@ step_4:
 
 	//	m_channel_total_pixel_number += cur_region.area_;
 
-	//	//basiclog_info2(sys_strcombine()<<L"gray "<<t_msers[i].m_gray_level<<L" area "<<cur_region.area_);
+	//	//basiclog_info2(sys_strcombine()<<"gray "<<t_msers[i].m_gray_level<<" area "<<cur_region.area_);
 
 	//	t_msers[i].m_memory_type = img_mser::Memory_Type_Moments;
 	//	t_msers[i].m_points = (mt_point*)offset;
@@ -487,16 +487,14 @@ step_4:
 	//	offset += 6;
 	//}
 
-	//if (gray_mask == 255 || !m_from_min_max[1]) {
-	//	i32 memory_size = (i32)(sizeof(b8) * m_accessible.capacity());
-	//	memory_size += (i32)(sizeof(mser_region) * (i32)pool_.capacity());
-	//	memory_size += (i32)(sizeof(mser_region*) * regionStack.capacity());
-	//	for (i32 i = 0; i < 256; ++i) {
-	//		memory_size += (i32)(sizeof(i32) * boundaryPixels[i].size());
-	//	}
-
-	//	basiclog_info2(sys_strcombine()<<L"idiap memory cost "<< memory_size / 1024.0 / 1024.0 <<L"MB");
-	//}
+	if (gray_mask == 255 || !m_from_min_max[1]) {
+		m_channel_total_running_memory = (i32)(sizeof(b8) * m_accessible.capacity());
+		m_channel_total_running_memory += (i32)(sizeof(mser_region) * (i32)pool_.capacity());
+		m_channel_total_running_memory += (i32)(sizeof(mser_region*) * regionStack.capacity());
+		for (i32 i = 0; i < 256; ++i) {
+			m_channel_total_running_memory += (i32)(sizeof(i32) * boundaryPixels[i].size());
+		}
+	}
 }
 
 void img_idiap_mser::processStack(int newPixelGreyLevel, int pixel, vector<mser_region *> & regionStack) {
@@ -548,7 +546,7 @@ void img_idiap_mser::processStack(int newPixelGreyLevel, int pixel, vector<mser_
 
 		// Either merge the histories of the components, or take the history from the winner. Note
 
-		// here that the top of stack should be considered one ¡¯time-step¡¯ back, so its current
+		// here that the top of stack should be considered one 'time-step' back, so its current
 
 		// size is part of the history. Therefore the top of stack would be the winner if its
 

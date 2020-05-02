@@ -1,6 +1,6 @@
 #basicmath
 
-A basic math library, including matrix operations, auto-derivative, sort.
+basic math library
 
 ## mt_mat
 

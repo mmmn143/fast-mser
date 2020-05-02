@@ -2,10 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="..\..\include\basiclog.h" />
-    <ClInclude Include="..\..\basiclog\helper.h" />
+    <ClInclude Include="..\..\src\helper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\basiclog\basiclog.cpp" />
-    <ClCompile Include="..\..\basiclog\helper.cpp" />
+    <ClCompile Include="..\..\src\basiclog.cpp" />
+    <ClCompile Include="..\..\src\helper.cpp" />
   </ItemGroup>
 </Project>

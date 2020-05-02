@@ -6,7 +6,7 @@ namespace basicsys {
 	class sys_timer {
 	public:
 
-		sys_timer(const wstring& tag, b8 auto_out_cost = sys_true, b8 debug_output = sys_true);
+		sys_timer(const string& tag, b8 auto_out_cost = sys_true, b8 debug_output = sys_true);
 		~sys_timer();
 
 		void begin();
@@ -24,7 +24,7 @@ namespace basicsys {
 
 	private:
 
-		wstring m_name;
+		string m_name;
 		i32 m_cost;
 		i32 m_count;
 		b8 m_auto_out_cost;

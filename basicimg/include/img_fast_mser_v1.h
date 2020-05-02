@@ -1,9 +1,3 @@
-/** @file img_fast_mser_v1.h
-
-The Fast MSER V1 algorithm.
-We propose a novel sub-tree merging algorithm and a novel pixel extraction algorithm to accelerate MSER detection. See details in our paper.
-*/
-
 #pragma once
 
 #include "img_mser_base.h"
@@ -72,6 +66,10 @@ namespace basicimg {
 			i32 m_head;
 			i32 m_tail;
 
+
+
+			u16 m_left, m_right, m_top, m_bottom;
+
 			//img_mser* m_mser;
 			//mt_point* m_points;	//for debug
 			
@@ -86,6 +84,8 @@ namespace basicimg {
 			mser_region* m_region;
 			i16 m_gray_level;	//to save value 256 we need the i16 type
 			i32 m_size;
+
+			u16 m_left, m_right, m_top, m_bottom;
 		};
 
 		class parallel_info {
@@ -153,10 +153,21 @@ namespace basicimg {
 		vector<i32*> m_orderd_indexes;
 
 		void allocate_memory(const mt_mat& img, const img_mask_info<u8>& mask);
+		void allocate_memory_parallel_1(const mt_mat& img, const img_mask_info<u8>& mask);
+		void allocate_memory_parallel_2(const mt_mat& img, const img_mask_info<u8>& mask);
 		void allocate_memory_parallel_4(const mt_mat& img, const img_mask_info<u8>& mask);
+		void allocate_memory_parallel_8(const mt_mat& img, const img_mask_info<u8>& mask);
+		void allocate_memory_parallel_16(const mt_mat& img, const img_mask_info<u8>& mask);
+		void allocate_memory_parallel_32(const mt_mat& img, const img_mask_info<u8>& mask);
 
 		void build_tree(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
+
+		void build_tree_parallel_1(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
+		void build_tree_parallel_2(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
 		void build_tree_parallel_4(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
+		void build_tree_parallel_8(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
+		void build_tree_parallel_16(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
+		void build_tree_parallel_32(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask);
 
 		void make_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask, u8 patch_index);
 		void process_tree_patch(parallel_info& pinfo, const mt_mat& img, const img_mask_info<u8>& mask, u8 gray_mask);
@@ -164,13 +175,26 @@ namespace basicimg {
 		void init_comp(connected_comp* comp, mser_region* region, u8 patch_index);
 		void new_region(connected_comp* comp, mser_region* region, u8 patch_index);
 
-		/** Our novel sub-tree merging algorithm
+		void merge_tree_parallel_2(const mt_mat& src, u8 gray_mask);
+
+		/**
+		Build MSER tree for whole image.
 		*/
 		void merge_tree_parallel_4(const mt_mat& src, u8 gray_mask);
 
-		void merge_tree_parallel_4_step_with_order(u8 merged_flag, i32 rows, i32 cols);
+		void merge_tree_parallel_8(const mt_mat& src, u8 gray_mask);
 
+		void merge_tree_parallel_16(const mt_mat& src, u8 gray_mask);
+
+		void merge_tree_parallel_32(const mt_mat& src, u8 gray_mask);
+
+		void merge_tree_parallel_2_step_with_order(i32 rows, i32 cols);
+
+		void merge_tree_parallel_4_step_with_order(u8 merged_flag, i32 rows, i32 cols);
+		
 		void merge_tree_parallel_4_step(u8 merged_flag);
+
+		void merge_tree_parallel_step(const mt_mat& src, u8 gray_mask, u32* parallel_indexes, i32 size, u32 parallel_step, b8 left_right, i32* gray_number, i32* gray_integral);
 
 		void connect(mser_region* a, mser_region* b, u32 split_patch_index);
 
@@ -179,23 +203,26 @@ namespace basicimg {
 
 		void recognize_mser();
 
-		void recognize_mser_parallel_4();
-		void recognize_mser_parallel_4_parallel();
+		void recognize_mser_parallel();
+
+		void recognize_mser_parallel_worker(i32 parallel_index);
 		
 		void disconnect(mser_region* r);
 
 		void extract_pixel(img_multi_msers& msers, u8 gray_mask);
 		
-		void extract_pixel_parallel_4(img_multi_msers& msers, u8 gray_mask);
-		void extract_pixel_parallel_4_simple_parallel_impl(img_multi_msers& msers, u8 gray_mask);
-		void extract_pixel_parallel_4_simple_parallel_impl2(img_multi_msers& msers, u8 gray_mask);
+		void extract_pixel_parallel_4_simple_impl(img_multi_msers& msers, u8 gray_mask);
+		void extract_pixel_parallel_4_simple_impl2(img_multi_msers& msers, u8 gray_mask);
 		
-		void extract_pixel_parallel_4_parallel_impl(img_multi_msers& msers, u8 gray_mask);
-		void extract_pixel_parallel_4_fast(img_multi_msers& msers, u8 gray_mask);
+		// self and child pixels
+		void extract_pixel_parallel_4_self_child_impl(img_multi_msers& msers, u8 gray_mask);
+		
+		void extract_pixel_parallel_1_fast(img_multi_msers& msers, u8 gray_mask);
+		void extract_pixel_parallel_k_fast(img_multi_msers& msers, u8 gray_mask);
+
+		void extract_top_pixel_parallel(i32 k, i32* parallel_stop_indexes, i32* memory_offsets, mt_point* memory, i32 region_memory_size, mser_region** top_regions, i32 top_region_size, vector<mser_region*>& top_backup);
 
 		void get_duplicated_regions(vector<mser_region*>& duplicatedRegions, mser_region* stableRegion, mser_region* beginRegion);
-
-		void accumulate_comp(connected_comp* comp, linked_point*& point);
 
 		void merge_comp(connected_comp* comp1, connected_comp* comp2);
 	};

@@ -10,26 +10,30 @@ namespace basicimg {
 }
 
 
-mt_mat img_img::load(const wstring& path, Load_Type type) {
+mt_mat img_img::load(const string& path, Load_Type type) {
 	mt_mat img;
 	load(img, path, type);
 
 	return img;
 }
 
-void img_img::load(basicmath::mt_mat& img, const wstring& path, Load_Type type /* = Load_Unchanged */) {
-	Mat cv_img;
-	imread(cv_img, basicsys_path_string(path), (i32)type);
+void img_img::load(basicmath::mt_mat& img, const string& path, Load_Type type /* = Load_Unchanged */) {
+#ifdef basicimg_imread
+	Mat cv_img = from_basiccv(img);
+	imread(cv_img, path, (i32)type);
+#else
+	Mat cv_img = imread(path, (i32)type);
+#endif
 
 	if (cv_img.empty()) {
-		basiclog_warning2(sys_strcombine()<<L"load "<<path<<L" failed!");
+		basiclog_warning2(sys_strcombine()<<"load "<<path<<" failed!");
 	}
 
 	img = use_opencv_memory(cv_img);
 }
 
-b8 img_img::save(const wstring& path, const mt_mat& mat) {
-	return imwrite(basicsys_path_string(path), from_basiccv(mat)) ? sys_true : sys_false;
+b8 img_img::save(const string& path, const mt_mat& mat) {
+	return imwrite(path, from_basiccv(mat)) ? sys_true : sys_false;
 }
 
 //mt_mat img_img::from_opencv(const Mat& mat) {
@@ -71,10 +75,10 @@ Mat img_img::from_basiccv(const mt_mat& mat) {
 	i32 depth_channel = CV_MAKETYPE(depth, channel);
 
 	if (mat.is_step_positive() && mat.is_min_abs_step_equal_element_size()) {
-		basicmath_mat_request_memory(u64, steps, mat.dim());
+		basicmath_mat_request_memory(size_t, steps, mat.dim());
 
 		for (i32 i = 0; i < mat.dim(); ++i) {
-			steps[i] = (u64)mat.step()[i];
+			steps[i] = (size_t)mat.step()[i];
 		}
 
 		Mat res(mat.dim(), mat.size(), depth_channel, (void*)mat.data(), steps);
@@ -83,7 +87,7 @@ Mat img_img::from_basiccv(const mt_mat& mat) {
 
 		return res;
 	} else {
-		basiclog_warning(basiclog_performance_warning, L"this will reduce the performance, please input the mat with positive steps and min abs step to be the channel size!");
+		basiclog_warning(basiclog_performance_warning, "this will reduce the performance, please input the mat with positive steps and min abs step to be the channel size!");
 		return img_img::from_basiccv(mat.clone());
 	}
 }
@@ -310,5 +314,115 @@ i32 img_img::depth_from_basiccv(mt_Depth depth) {
 	default:
 		basiclog_assert2(sys_false);
 		return CV_USRTYPE1;
+	}
+}
+
+void img_img::gaussian_blur(mt_mat& res, const mt_mat& src, const mt_size& kernel_size, f64 sigma_x, f64 sigma_y) {
+	if (sigma_y < 0) {
+		sigma_y = sigma_x;
+	}
+
+	i32 kernel_width = kernel_size.m_width;
+	i32 kernel_height = kernel_size.m_height;
+
+	if (kernel_width < 0) {
+		if (sigma_x == 0) {
+			kernel_width = 1;
+		} else {
+			kernel_width = (i32)mt_helper::neibour_float((sigma_x * (src.depth() == mt_U8 ? 3 : 4) * 2 + 1)) | 1;
+		}	
+	}
+
+	if (kernel_height < 0) {
+		if (sigma_y == 0) {
+			kernel_height = 1;
+		} else {
+			kernel_height = (i32)mt_helper::neibour_float((sigma_y * (src.depth() == mt_U8 ? 3 : 4) * 2 + 1)) | 1;
+		}	
+	}
+
+	sigma_x = mt_helper::max(0., sigma_x);
+	sigma_y = mt_helper::max(0., sigma_y);
+
+	mt_mat kernel_x, kernel_y;
+	generate_gaussian_kernel(kernel_x, kernel_width, sigma_x);
+
+	if (kernel_height == kernel_width && mt_helper::compare_double(sigma_x, sigma_y) == 0) {
+		kernel_y = kernel_x;
+	} else {
+		generate_gaussian_kernel(kernel_y, kernel_width, sigma_y);
+	}
+
+	mt_mat temp;
+	mt_mat temp_src = src.convert(mt_F64);
+
+	temp_src.conv(temp, kernel_x, mt_Conv_Boundary_Type_Same);
+	temp.conv(temp, kernel_y.t(), mt_Conv_Boundary_Type_Same);
+
+	//basiclog_info2(temp);
+
+	res = temp.convert(src.depth());
+}
+
+mt_mat img_img::gaussian_blur(const mt_mat& src, const mt_size& kernel_size, f64 sigma_x, f64 sigma_y) {
+	mt_mat res;
+	gaussian_blur(res, src, kernel_size, sigma_x, sigma_y);
+
+	return res;
+}
+
+void img_img::generate_gaussian_kernel(mt_mat& kernel, i32 size, f64 sigma) {
+	kernel.create(1, size, mt_F64);
+	i32 half = size / 2;
+
+	f64* data = (f64*)kernel.data();
+	f64 sum = 0;
+
+	for (i32 i = 0; i < size; ++i) {
+		f64 temp = (i - half) / sigma;
+		*data = exp(-0.5 * temp * temp);
+		sum += *data;
+		data += kernel.last_dim_element_step();
+	}
+
+	data = (f64*)kernel.data();
+	for (i32 i = 0; i < size; ++i) {
+		*data /= sum;
+
+		data += kernel.last_dim_element_step();
+	}
+
+	//basiclog_info2(kernel);
+}
+
+void img_img::genarate_chessboard(mt_mat& res, const mt_size& image_size, i32 chess_size, int channel) {
+	res.create(image_size.m_height, image_size.m_width, mt_Depth_Channel(mt_U8, channel));
+
+	u8* data_dim0 = res.data();
+
+	for (i32 row = 0; row < image_size.m_height; ++row) {
+		u8* data = data_dim0;
+		
+		i32 chess_row = row / chess_size;
+		i32 chess_col = 0;
+		u8 gray = chess_row % 2 == 0 ? 0 : 255;
+
+		for (i32 col = 0; col < image_size.m_width; ++col) {
+			i32 new_chess_col = col / chess_size;
+
+			if (new_chess_col != chess_col) {
+				gray ^= 255;
+			}
+
+			chess_col = new_chess_col;
+
+			for (i32 c = 0; c < channel; ++c) {
+				data[c] = gray;
+			}
+
+			data += res.step()[1];
+		}
+
+		data_dim0 += res.step()[0];
 	}
 }

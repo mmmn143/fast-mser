@@ -4,13 +4,13 @@ namespace basicsys {
 class sys_strcombine {
 public:
 
-	operator wstring() const;
+	operator string() const;
 
 	sys_strcombine() {
 
 	}
 
-	sys_strcombine(const wstring& text)
+	sys_strcombine(const string& text)
 	: m_text(text) {
 	}
 
@@ -33,19 +33,9 @@ public:
 	sys_strcombine& operator<<(basicsys::i64 value);
 	sys_strcombine& operator<<(basicsys::u64 value);
 
+	sys_strcombine& operator<<(const char* text);
 
-
-	/**
-	* Out character.
-	* Notice that the reference type for parameter transformation is not valid due to the overload mechanism will adopt the method of <<(int value)
-	* when you use ml_vs_output<<wchar_t('A'). However, when you use wchar_t a = wchar_t('A'), ml_vs_output<<a will pass the following method in reference 
-	* type for parameter transformation; 
-	* 
-	*/
-	sys_strcombine& operator<<(basicsys::c16 character);
-	sys_strcombine& operator<<(const wchar_t* text);
-
-	sys_strcombine& operator<<(const wstring& text);
+	sys_strcombine& operator<<(const string& text);
 
 	sys_strcombine& operator<<(const sys_strcombine& other);
 
@@ -62,35 +52,35 @@ public:
 
 	template<class T>
 	sys_strcombine& operator<<(const vector<T>& data) {
-		*this<<L"[";
+		*this<<"[";
 
 		for (int i = 0; i < (int)data.size(); ++i) {
 			*this<<data[i];
 
 			if (i != (int)data.size() - 1) {
-				*this<<L", ";
+				*this<<", ";
 			}
 		}
 
-		*this<<L"]";
+		*this<<"]";
 		return *this;
 	}
 
 	template<class T1, class T2>
 	sys_strcombine& operator<<(const map<T1, T2>& data) {
-		*this<<L"{\n";
-
-		for (map<T1, T2>::const_iterator iter = data.begin(); iter != data.end(); ++iter) {
-			*this<<iter->first<<L":"<<iter->second<<L"\n";
+		*this<<"{\n";
+		typename map<T1, T2>::const_iterator iter;
+		for (iter = data.begin(); iter != data.end(); ++iter) {
+			*this<<iter->first<<":"<<iter->second<<"\n";
 		}
 
-		*this<<L"}";
+		*this<<"}";
 		return *this;
 	}
 
 private:
 
-	wstring m_text;
+	string m_text;
 };
 
 template<class T>

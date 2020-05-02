@@ -149,7 +149,7 @@ void mt_mat_helper::get_pooling_result_size(i32 dims, i32* res_sizes, const i32*
 	}
 }
 
-void mt_mat_helper::save(const wstring& file_path, const mt_mat& mat, b8 text_file) {
+void mt_mat_helper::save(const string& file_path, const mt_mat& mat, b8 text_file) {
 	if (text_file) {
 		sys_string_file_buffer_writer buffer(file_path);
 		save(&buffer, mat);
@@ -162,10 +162,10 @@ void mt_mat_helper::save(const wstring& file_path, const mt_mat& mat, b8 text_fi
 void mt_mat_helper::save(sys_buffer_writer* buffer, const mt_mat& mat) {
 	sys_json_writer writer(buffer);
 
-	writer<<L"basicmath_mat"<<mat;
+	writer<<"basicmath_mat"<<mat;
 }
 
-mt_mat mt_mat_helper::load(const wstring& file_path, b8 text_file /* = sys_true */) {
+mt_mat mt_mat_helper::load(const string& file_path, b8 text_file /* = sys_true */) {
 	if (text_file) {
 		sys_string_file_buffer_reader buffer(file_path);
 		return load(&buffer);
@@ -180,7 +180,7 @@ mt_mat mt_mat_helper::load(sys_buffer_reader* buffer) {
 
 	sys_json_reader reader(buffer);
 
-	reader[L"basicmath_mat"]>>res;
+	reader["basicmath_mat"]>>res;
 
 	return res;
 }
@@ -259,7 +259,7 @@ mt_auto_derivative* mt_mat_helper::check_mat_array_auto_derivative(const vector<
 	for (i32 i = 0; i < (i32)elements.size(); ++i) {
 		if (elements[i].m_auto_derivative != NULL) {
 			if (auto_derivative != NULL && auto_derivative != elements[i].m_auto_derivative) {
-				basiclog_assert_message2(sys_false, L"all mats must have only one auto_derivative!");
+				basiclog_assert_message2(sys_false, "all mats must have only one auto_derivative!");
 			}
 
 			auto_derivative = elements[i].m_auto_derivative;

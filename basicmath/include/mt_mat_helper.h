@@ -39,9 +39,9 @@ namespace basicmath {
 
 		static void clone(vector<mt_mat>& dsts, const vector<mt_mat>& srcs);
 
-		static void save(const wstring& file_path, const mt_mat& mat, b8 text_file = sys_true);
+		static void save(const string& file_path, const mt_mat& mat, b8 text_file = sys_true);
 		static void save(sys_buffer_writer* writer, const mt_mat& mat);
-		static mt_mat load(const wstring& file_path, b8 text_file = sys_true);
+		static mt_mat load(const string& file_path, b8 text_file = sys_true);
 		static mt_mat load(sys_buffer_reader* reader);
 
 		static b8 need_omp_for_multi_channel(const mt_mat& mat);

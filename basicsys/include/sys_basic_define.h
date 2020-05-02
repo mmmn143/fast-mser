@@ -31,12 +31,12 @@ protected:	\
 
 
 #define basicsys_class_name_method(class_description)	\
-	static const wstring& class_name() { \
-		static wstring name = L#class_description; \
+	static const string& class_name() { \
+		static string name = #class_description; \
 		return name; \
 	}	\
-	virtual wstring object_class_name() const { \
-		return L#class_description; \
+	virtual string object_class_name() const { \
+		return #class_description; \
 	}
 
 namespace basicsys {
@@ -85,3 +85,30 @@ namespace basicsys {
 
 
 //#define basicsys_enable_mkl
+
+
+#ifndef _WIN32
+
+static int fopen_s(FILE ** fp, const char * path, const char * flag) {
+	*fp = fopen(path, flag);
+
+	if (*flag != NULL) {
+		return 0;
+	}
+
+	return -1;
+}
+
+#define _access access
+#define _isnan isnan
+#define _finite finite
+
+static void strncpy_s(char* dst, basicsys::i32 dist_size, const char* src, basicsys::i32 src_pos) {
+	strncpy(dst, src, src_pos);
+}
+
+static basicsys::i64 _atoi64(const char* val) {
+	return atoll(val);
+}
+
+#endif

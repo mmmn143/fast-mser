@@ -190,7 +190,6 @@ void img_opencv_mser::preProcessImage(const mt_mat& src, u8 gray_mask) {
 		level_size[i] = 0;
 	}
 		
-	//第一行设置为已访问
 	for (int col = 0; col < src.size()[1] + 2; ++col) {
 		*imgptr++ = -1;
 	}
@@ -224,7 +223,6 @@ void img_opencv_mser::preProcessImage(const mt_mat& src, u8 gray_mask) {
 		}
 	}	
 
-	//最后一行设置为已访问
 	for ( int col = 0; col < src.size()[1] + 2; col++ ) {
 		*imgptr++ = -1;
 	}
@@ -237,7 +235,7 @@ void img_opencv_mser::preProcessImage(const mt_mat& src, u8 gray_mask) {
 }
 
 void img_opencv_mser::extractPass(vector<img_mser>& mserInfos, i16* ioptr, u8 gray_mask) {
-	sys_timer time(L"extractPass");
+	sys_timer time("extractPass");
 	time.begin();
 
 	GrowHistory* begin_histptr = &m_history[0];
@@ -356,14 +354,20 @@ void img_opencv_mser::extractPass(vector<img_mser>& mserInfos, i16* ioptr, u8 gr
 
 	time.end();
 
-	basiclog_info2(sys_strcombine()<<L"er number "<<(int)(histptr - begin_histptr));
+	basiclog_info2(sys_strcombine()<<"er number "<<(int)(histptr - begin_histptr));
 }
 
 void img_opencv_mser::clear_memory_cache() {
 	m_temp_image = mt_mat();
-	m_points.swap(vector<LinkedPoint>());
-	m_history.swap(vector<GrowHistory>());
-	m_heap.swap(vector<i16*>());
+
+	vector<LinkedPoint> temp;
+	m_points.swap(temp);
+
+	vector<GrowHistory> temp2;
+	m_history.swap(temp2);
+
+	vector<i16*> temp3;
+	m_heap.swap(temp3);
 }
 
 void img_opencv_mser::allocate_memory(const mt_mat& src, const img_mask_info<u8>& mask) {
@@ -395,12 +399,11 @@ void img_opencv_mser::allocate_memory(const mt_mat& src, const img_mask_info<u8>
 	m_dir[2] = -1;
 	m_dir[3] = -m_temp_image.size()[1];
 
-	i32 memory_cost = sizeof(u16) * m_temp_image.size()[0] * m_temp_image.size()[1] + sizeof(i16*) * (sourceImageSize + 256) + sizeof(LinkedPoint) * sourceImageSize + sizeof(GrowHistory) * sourceImageSize;
-	basiclog_info2(sys_strcombine()<<L"opencv memory cost "<< memory_cost / 1024.0 / 1024.0 <<L"MB");
+	m_channel_total_running_memory += sizeof(u16) * m_temp_image.size()[0] * m_temp_image.size()[1] + sizeof(i16*) * (sourceImageSize + 256) + sizeof(LinkedPoint) * sourceImageSize + sizeof(GrowHistory) * sourceImageSize;
 }
 
 void img_opencv_mser::build_tree(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask) {
-	basiclog_assert_message2(mask.m_mask_type == img_Mask_Type_Null, L"Not support mask!");
+	basiclog_assert_message2(mask.m_mask_type == img_Mask_Type_Null, "Not support mask!");
 	preProcessImage(src, gray_mask);
 }
 

@@ -34,5 +34,5 @@ Other project should include this head file to use the features of BasicMath.
 #pragma comment(lib, "mkl_intel_lp64.lib")
 #pragma comment(lib, "mkl_intel_thread.lib")
 #pragma comment(lib, "libiomp5md.lib")
-#elif defined 
+#else 
 #endif

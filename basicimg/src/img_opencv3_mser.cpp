@@ -1,5 +1,3 @@
-// Please see https://github.com/opencv/opencv for its original implementation.
-
 #include "stdafx.h"
 
 #include "img_opencv3_mser.h"
@@ -86,7 +84,7 @@ void img_opencv3_mser::CompHistory::checkAndCapture(WParams& wp )
 	wp.msers->push_back(img_mser());
 	img_mser& region = wp.msers->back();
 	*wp.m_total_pixel_number += (u32)size;
-	/*region.m_size = size;
+	region.m_size = size;
 
 	region.m_points = new mt_point[region.m_size];
 	region.m_memory_type = img_mser::Memory_Type_Self;
@@ -96,18 +94,18 @@ void img_opencv3_mser::CompHistory::checkAndCapture(WParams& wp )
 
 	for( PPixel pix = head; j < size; j++, pix = pix0[pix].getNext() )
 	{
-	int y = pix/step;
-	int x = pix - y*step;
+		int y = pix/step;
+		int x = pix - y*step;
 
-	xmin = std::min(xmin, x);
-	xmax = std::max(xmax, x);
-	ymin = std::min(ymin, y);
-	ymax = std::max(ymax, y);
+		xmin = std::min(xmin, x);
+		xmax = std::max(xmax, x);
+		ymin = std::min(ymin, y);
+		ymax = std::max(ymax, y);
 
-	region.m_points[j] = mt_point(x, y);
+		region.m_points[j] = mt_point(x, y);
 	}
 
-	region.m_rect = mt_rect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1);*/
+	region.m_rect = mt_rect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1);
 }
 
 void img_opencv3_mser::ConnectedComp::growHistory(CompHistory*& hptr, WParams& wp, int new_gray_level, bool final)
@@ -205,9 +203,15 @@ void img_opencv3_mser::ConnectedComp::merge( ConnectedComp* comp1, ConnectedComp
 
 void img_opencv3_mser::clear_memory_cache() {
 	m_tempsrc = mt_mat();
-	m_pixbuf.swap(vector<Pixel>());
-	m_heapbuf.swap(vector<Pixel*>());
-	m_histbuf.swap(vector<CompHistory>());
+
+	vector<Pixel> temp;
+	m_pixbuf.swap(temp);
+
+	vector<Pixel*> temp2;
+	m_heapbuf.swap(temp2);
+
+	vector<CompHistory> temp3;
+	m_histbuf.swap(temp3);
 }
 
 void img_opencv3_mser::allocate_memory(const mt_mat& src, const img_mask_info<u8>& mask) {
@@ -227,8 +231,7 @@ void img_opencv3_mser::allocate_memory(const mt_mat& src, const img_mask_info<u8
 	m_heapbuf.resize(area + 256);
 	m_histbuf.resize(area);
 
-	i32 memory_cost = sizeof(Pixel) * area + sizeof(Pixel*) * (area + 256) + sizeof(CompHistory) * area + sizeof(Pixel**) * 256 + sizeof(ConnectedComp) * 257 + sizeof(i32) * 256;
-	basiclog_info2(sys_strcombine()<<L"opencv3 memory cost "<< memory_cost / 1024.0 / 1024.0 <<L"MB");
+	m_channel_total_running_memory += sizeof(Pixel) * area + sizeof(Pixel*) * (area + 256) + sizeof(CompHistory) * area + sizeof(Pixel**) * 256 + sizeof(ConnectedComp) * 257 + sizeof(i32) * 256;
 }
 
 void img_opencv3_mser::build_tree(const mt_mat& src, const img_mask_info<u8>& mask, u8 gray_mask) {
@@ -355,7 +358,7 @@ void img_opencv3_mser::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
 		comptr->growHistory(histptr, wp, 256, true);
 	}
 
-	basiclog_info2(sys_strcombine()<<L"er number: "<< (histptr - &m_histbuf[0]));
+	basiclog_info2(sys_strcombine()<<"er number: "<< (i64)(histptr - &m_histbuf[0]));
 }
 
 void img_opencv3_mser::preprocess( const mt_mat& img, int* level_size, u8 mask)
@@ -369,7 +372,7 @@ void img_opencv3_mser::preprocess( const mt_mat& img, int* level_size, u8 mask)
 		Pixel borderpix;
 		borderpix.setDir(5);
 
-		sys_timer t0(L"mask");
+		sys_timer t0("mask");
 		t0.begin();
 
 		for( j = 0; j < step; j++ )

@@ -68,15 +68,15 @@ namespace basicmath {
 		int m_access_number;
 	};
 
-	class mt_array_element_iterator {
+	class mt_array_element_const_iterator {
 	public:
 
-		mt_array_element_iterator(u8* data, int ndims, const int* sizes, const int* steps, int element_size);
-		mt_array_element_iterator(mt_mat& mat);
+		mt_array_element_const_iterator(const u8* data, int ndims, const int* sizes, const int* steps, int element_size);
+		mt_array_element_const_iterator(const mt_mat& mat);
 
-		virtual ~mt_array_element_iterator() {}
+		virtual ~mt_array_element_const_iterator() {}
 
-		u8* data();
+		const u8* data();
 
 		int index() const {
 			return m_accessed_count - 1;
@@ -96,52 +96,52 @@ namespace basicmath {
 
 	protected:
 
-		void init_construct(u8* data, int ndims, const int* sizes, const int* steps, int element_size);
+		void init_construct(const u8* data, int ndims, const int* sizes, const int* steps, int element_size);
 
-		mt_array_element_iterator() {}
+		mt_array_element_const_iterator() {}
 
-		friend class mt_array_memory_block_iterator;
+		friend class mt_array_memory_block_const_iterator;
 
 		int m_dims;
 		
 		const int* m_sizes;
 		const int* m_int_steps;
 
-		vector<u8*> m_ptr_dim_datas;
+		vector<const u8*> m_ptr_dim_datas;
 		vector<int> m_cur_position;
 		int m_accessed_count;
 		int m_element_number;
 		int m_element_size;
 	};
 
-	class mt_array_element_const_iterator : public mt_array_element_iterator {
+	class mt_array_element_iterator : public mt_array_element_const_iterator {
 	public:
 
-		mt_array_element_const_iterator(const u8* data, int ndims, const int* sizes, const int* steps, int element_size);
-		mt_array_element_const_iterator(const mt_mat& mat);
+		mt_array_element_iterator(u8* data, int ndims, const int* sizes, const int* steps, int element_size);
+		mt_array_element_iterator(mt_mat& mat);
 
-		const u8* data();
+		u8* data();
 
 	protected:
 
 
 	};
 
-	class mt_array_memory_block_iterator {
+	class mt_array_memory_block_const_iterator {
 	public:
 
-		mt_array_memory_block_iterator(u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size);
-		mt_array_memory_block_iterator(mt_mat& mat);
+		mt_array_memory_block_const_iterator(const u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size);
+		mt_array_memory_block_const_iterator(const mt_mat& mat);
 
-		virtual ~mt_array_memory_block_iterator() {}
+		virtual ~mt_array_memory_block_const_iterator() {}
 
 		/**
 		@param ordered if the step[dim] < 0, then the return data point to the end of the data in dim.
 			When we want to use memcpy function to copy data, we need to set ordered be true to make the data point to front side.
 		*/
-		u8* data();
+		const u8* data();
 
-		u8* memory_start();
+		const u8* memory_start();
 
 		int block_number() const;
 
@@ -166,19 +166,21 @@ namespace basicmath {
 
 	private:
 		
-		void init_construct(u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size);
+		void init_construct(const u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size);
 
-		mt_array_element_iterator m_element_iterator;
+		mt_array_element_const_iterator m_element_iterator;
 		int m_element_step;
 		int m_block_element_number;
 	};
 
-	class mt_array_memory_block_const_iterator : public mt_array_memory_block_iterator {
+	class mt_array_memory_block_iterator : public mt_array_memory_block_const_iterator {
 	public:
 
-		mt_array_memory_block_const_iterator(const u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size);
-		mt_array_memory_block_const_iterator(const mt_mat& mat);
+		mt_array_memory_block_iterator(u8* data, int ndims, const int* sizes, const int* steps, int dim, int element_size);
+		mt_array_memory_block_iterator(mt_mat& mat);
 
-		const u8* data();
+		u8* data();
+
+		u8* memory_start();
 	};
 }

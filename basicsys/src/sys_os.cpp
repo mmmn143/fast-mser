@@ -4,7 +4,7 @@
 
 #if defined _WIN32
 #include <windows.h>
-#elif defined
+#else
 #endif // DEBUG
 
 
@@ -15,7 +15,7 @@
 u64 sys_os::current_thread_id() {
 #if defined _WIN32
 	return GetCurrentThreadId();
-#elif defined
+#else
 	return 0;
 #endif // DEBUG
 }

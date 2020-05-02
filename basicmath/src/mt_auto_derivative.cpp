@@ -5,7 +5,7 @@
 
 mt_auto_derivative::~mt_auto_derivative() {
 
-	sys_timer timer(L"deconstrcut auto_derivative", sys_false);
+	sys_timer timer("deconstrcut auto_derivative", sys_false);
 	timer.begin();
 	basicsys_delete_vector_ptr(m_nodes);
 	timer.end();
@@ -38,11 +38,8 @@ void mt_auto_derivative::detach(vector<mt_mat>& mats) {
 }
 
 mt_mat mt_auto_derivative::derivative(const mt_mat& target, const mt_mat& src) {
-	b8 cur_record_state = math_operation_recorded();
-
-	if (cur_record_state) {
-		record_math_operation(sys_false);
-	}
+	Stage old_state = m_stage;
+	m_stage = mt_auto_derivative::Stage_Derivative;
 	
 	basiclog_assert2(target.auto_derivative() != NULL && target.auto_derivative() == src.auto_derivative());
 
@@ -68,13 +65,11 @@ mt_mat mt_auto_derivative::derivative(const mt_mat& target, const mt_mat& src) {
 		}
 
 		if (res.is_empty()) {
-			basiclog_warning2(L"there is no target mat in the computation process!");
+			basiclog_warning2("there is no target mat in the computation process!");
 		}
 	}
 
-	if (cur_record_state) {
-		record_math_operation(sys_true);
-	}
+	m_stage = old_state;
 	
 	return res;
 }
@@ -297,17 +292,9 @@ void mt_auto_derivative::abs(const mt_mat& res, const mt_mat& src) {
 	m_nodes.push_back(new mt_ad_abs_tree_node(res, get_node(src), m_max_cache_size));
 }
 
-void mt_auto_derivative::record_math_operation(b8 enable) {
-	m_enable_math_operation = enable;
-}
-
-b8 mt_auto_derivative::math_operation_recorded() const {
-	return m_enable_math_operation;
-}
-
 void mt_auto_derivative::reset() {
 	basicsys_delete_vector_ptr(m_nodes);
-	m_enable_math_operation = sys_true;
+	m_stage = Stage_Record_Computing;
 
 	m_nodes.clear();
 }

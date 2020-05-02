@@ -1,5 +1,6 @@
 #pragma once
 
+#include <math.h>
 #include <limits>
 
 namespace basicmath {
@@ -61,11 +62,11 @@ namespace basicmath {
 			return depth_size() * channel();
 		}
 
-		static wstring depth_str(mt_Depth depth);
-		static mt_Depth depth_i32(const wstring& depth);
+		static string depth_str(mt_Depth depth);
+		static mt_Depth depth_i32(const string& depth);
 
-		static wstring depth_channel_str(mt_Depth_Channel depth_channel);
-		static mt_Depth_Channel depth_channel_i32(const wstring& depth_channel);
+		static string depth_channel_str(mt_Depth_Channel depth_channel);
+		static mt_Depth_Channel depth_channel_i32(const string& depth_channel);
 
 		bool operator==(const mt_Depth_Channel& other) const {
 			return m_mask == other.m_mask;
@@ -137,7 +138,7 @@ namespace basicmath {
 		mt_Conv_Kernel_Align_Type_Cross_Col,
 	};
 
-	static const wstring mt_Conv_Boundary_Type_Descriptions[] = {L"valid", L"full", L"same"};
+	static const string mt_Conv_Boundary_Type_Descriptions[] = {"valid", "full", "same"};
 
 	enum mt_Pooling_Type{
 		mt_Pooling_Type_Mean,
@@ -148,7 +149,7 @@ namespace basicmath {
 		mt_Pooling_Type_Index,
 	};
 
-	static const wstring mt_Pooling_Type_Descriptions[] = {L"mean", L"max", L"min", L"first_value"};
+	static const string mt_Pooling_Type_Descriptions[] = {"mean", "max", "min", "first_value"};
 
 	enum mt_Dist_Type {
 		mt_Dist_Type_L1,
@@ -179,7 +180,7 @@ namespace basicmath {
 		mt_Activate_Type_Relu,
 	};
 
-	static const wstring mt_Activate_Type_Descriptions[] = {L"sigmoid", L"linear", L"tanh", L"softmax", L"relu"};
+	static const string mt_Activate_Type_Descriptions[] = {"sigmoid", "linear", "tanh", "softmax", "relu"};
 
 	static const f64 mt_Tanh_Default_Alpha = 1.7159;
 	static const f64 mt_Tanh_Default_Beta = 0.666667;
@@ -190,5 +191,5 @@ namespace basicmath {
 		mt_Loss_Type_Logarithmic,
 	};
 
-	static const wstring mt_Loss_Type_Descriptions[] = {L"0_1", L"quadratic", L"logarithmic"};
+	static const string mt_Loss_Type_Descriptions[] = {"0_1", "quadratic", "logarithmic"};
 }

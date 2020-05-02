@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "mt_helper.h"
 
 namespace basicmath {
 
@@ -28,6 +28,14 @@ namespace basicmath {
 				&& mt_helper::compare_value(other.value[1], value[1]) == 0
 				&& mt_helper::compare_value(other.value[2], value[2]) == 0
 				&& mt_helper::compare_value(other.value[3], value[3]) == 0;
+		}
+
+		void to_vector(vector<T>& dst) const {
+			dst.resize(sizeof(value) / sizeof(T));
+
+			for (i32 i = 0; i < (i32)dst.size(); ++i) {
+				dst[i] = value[i];
+			}
 		}
 
 		T value[4];

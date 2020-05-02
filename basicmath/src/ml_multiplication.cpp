@@ -49,19 +49,19 @@ namespace basicmath {
 			} else {
 				mt_mat temp_cur = a;
 				if (a.is_step_negative()) {
-					basiclog_warning(basiclog_performance_warning, L"the step of current mat has negative values, this will reduce the performance, you should better input a mat with all positive steps!");
+					basiclog_warning(basiclog_performance_warning, "the step of current mat has negative values, this will reduce the performance, you should better input a mat with all positive steps!");
 					temp_cur = a.clone();
 				} else if (!a.is_min_abs_step_equal_element_size()) {
-					basiclog_warning(basiclog_performance_warning, L"this mat is result of the channel_at() on a mat with more than 1 channel, this will reduce the performance!");
+					basiclog_warning(basiclog_performance_warning, "this mat is result of the channel_at() on a mat with more than 1 channel, this will reduce the performance!");
 					temp_cur = a.clone();
 				}
 
 				mt_mat temp_value = b;
 				if (b.is_step_negative()) {
-					basiclog_warning(basiclog_performance_warning, L"the step of other mat has negative values, this will reduce the performance, you should better input a mat with all positive steps!");
+					basiclog_warning(basiclog_performance_warning, "the step of other mat has negative values, this will reduce the performance, you should better input a mat with all positive steps!");
 					temp_value = b.clone();
 				} else if (!b.is_min_abs_step_equal_element_size()) {
-					basiclog_warning(basiclog_performance_warning, L"other mat is result of the channel_at() on a mat with more than 1 channel, this will reduce the performance!");
+					basiclog_warning(basiclog_performance_warning, "other mat is result of the channel_at() on a mat with more than 1 channel, this will reduce the performance!");
 					temp_value = b.clone();
 				}
 
@@ -104,7 +104,7 @@ namespace basicmath {
 mt_mat mt_mat::mul(const mt_mat& value) const {
 	basiclog_assert2(depth_channel() == value.depth_channel());
 	basiclog_assert2(depth() == mt_F32 || depth() == mt_F64);
-	basiclog_assert_message2(size()[1] == value.size()[0], L"matrix a * b mul must be satisfied the rule of a.col = b.row!");
+	basiclog_assert_message2(size()[1] == value.size()[0], "matrix a * b mul must be satisfied the rule of a.col = b.row!");
 
 	mt_mat res(size()[0], value.size()[1], depth_channel());
 
@@ -124,7 +124,7 @@ mt_mat mt_mat::mul(const mt_mat& value) const {
 		}
 	}
 	
-	if (m_auto_derivative != NULL && m_auto_derivative->math_operation_recorded()) {
+	if (m_auto_derivative != NULL && m_auto_derivative->stage() == mt_auto_derivative::Stage_Record_Computing) {
 		res.m_auto_derivative = m_auto_derivative;
 		value.m_auto_derivative = m_auto_derivative;
 

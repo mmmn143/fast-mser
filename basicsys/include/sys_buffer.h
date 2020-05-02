@@ -31,7 +31,6 @@ namespace basicsys {
 		virtual sys_buffer_writer* write(b8 val) = 0;
 
 		virtual sys_buffer_writer* write(i8 val) = 0;
-		virtual sys_buffer_writer* write(c16 val) = 0;
 		virtual sys_buffer_writer* write(u8 val) = 0;
 
 		virtual sys_buffer_writer* write(u16 val) = 0;
@@ -43,11 +42,11 @@ namespace basicsys {
 		virtual sys_buffer_writer* write(f32 val) = 0;
 		virtual sys_buffer_writer* write(f64 val) = 0;
 
-		virtual sys_buffer_writer* write(const wchar_t* val) {
-			return write(wstring(val));
+		virtual sys_buffer_writer* write(const char* val) {
+			return write(string(val));
 		}
 
-		virtual sys_buffer_writer* write(const wstring& val) = 0;
+		virtual sys_buffer_writer* write(const string& val) = 0;
 
 		virtual i64 position() const = 0;
 		virtual sys_buffer_writer* seek(i64 offset, sys_File_Seek seek_type) = 0;
@@ -81,8 +80,8 @@ namespace basicsys {
 
 		virtual b8 is_string_buffer() const = 0;
 
-		virtual wstring read_str(i32 size) const = 0;
-		virtual void read_str(wstring& str, i32 size) const = 0;
+		virtual string read_str(i32 size) const = 0;
+		virtual void read_str(string& str, i32 size) const = 0;
 
 		virtual i64 position() const = 0;
 		virtual i64 size() const = 0;
@@ -109,8 +108,8 @@ namespace basicsys {
 
 	class sys_byte_buffer_writer : public sys_buffer_writer {
 	public:
-		sys_byte_buffer_writer(vector<basicsys::u8>& buffer) {
-			m_buffer = &buffer;
+		sys_byte_buffer_writer(vector<basicsys::u8>* buffer) {
+			m_buffer = buffer;
 			m_position = 0;
 		}
 
@@ -128,7 +127,6 @@ namespace basicsys {
 
 		virtual sys_buffer_writer* write(b8 val);
 		virtual sys_buffer_writer* write(i8 val);
-		virtual sys_buffer_writer* write(c16 val);
 		virtual sys_buffer_writer* write(u8 val);
 		virtual sys_buffer_writer* write(u16 val);
 		virtual sys_buffer_writer* write(i16 val);
@@ -139,7 +137,7 @@ namespace basicsys {
 		virtual sys_buffer_writer* write(f32 val);
 		virtual sys_buffer_writer* write(f64 val);
 
-		virtual sys_buffer_writer* write(const wstring& val);
+		virtual sys_buffer_writer* write(const string& val);
 
 		virtual sys_buffer_writer* write(const vector<u8>& buffer);
 		virtual sys_buffer_writer* write(const u8* buffer_start, const u8* buffer_end);
@@ -199,8 +197,6 @@ namespace basicsys {
 
 		virtual u8 read_u8() const;
 
-		virtual c16 read_c16() const;
-
 		virtual u16 read_u16() const;
 
 		virtual i16 read_i16() const;
@@ -217,13 +213,13 @@ namespace basicsys {
 
 		virtual f64 read_f64() const;
 
-		virtual wstring read_str(i32 size) const {
-			wstring text;
+		virtual string read_str(i32 size) const {
+			string text;
 			read_str(text, size);
 			return text;
 		}
 
-		virtual void read_str(wstring& str, i32 size) const;
+		virtual void read_str(string& str, i32 size) const;
 		virtual void read(vector<u8>& data, i32 size) const;
 		virtual void read(u8* data, i32 size) const;
 
@@ -247,7 +243,7 @@ namespace basicsys {
 	class sys_byte_file_buffer_writer : public sys_byte_buffer_writer {
 	public:
 
-		sys_byte_file_buffer_writer(const wstring& file_path, b8 is_append = false);
+		sys_byte_file_buffer_writer(const string& file_path, b8 is_append = false);
 		sys_byte_file_buffer_writer(FILE* file, b8 need_close_file = false);
 
 		virtual ~sys_byte_file_buffer_writer();
@@ -278,7 +274,7 @@ namespace basicsys {
 	class sys_byte_file_buffer_reader : public sys_byte_buffer_reader {
 	public:
 
-		sys_byte_file_buffer_reader(const wstring& file_path);
+		sys_byte_file_buffer_reader(const string& file_path);
 		sys_byte_file_buffer_reader(FILE* file, b8 need_close_file = false);
 
 		virtual ~sys_byte_file_buffer_reader();
@@ -313,7 +309,7 @@ namespace basicsys {
 
 		//virtual f64 read_f64() const;
 
-		//virtual void read_str(wstring& str, i32 size) const;
+		//virtual void read_str(string& str, i32 size) const;
 		//virtual void read(vector<u8>& data, i32 size) const;
 		virtual void read(u8* start, i32 size) const;
 
@@ -336,9 +332,9 @@ namespace basicsys {
 	class sys_string_buffer_writer : public sys_buffer_writer {
 	public:
 
-		sys_string_buffer_writer(wstring& str) {
+		sys_string_buffer_writer(string* str) {
 			m_position = 0;
-			m_str = &str;
+			m_str = str;
 		}
 
 		virtual ~sys_string_buffer_writer();
@@ -357,7 +353,6 @@ namespace basicsys {
 
 		virtual sys_buffer_writer* write(b8 val);
 		virtual sys_buffer_writer* write(i8 val);
-		virtual sys_buffer_writer* write(c16 val);
 		virtual sys_buffer_writer* write(u8 val);
 		virtual sys_buffer_writer* write(u16 val);
 		virtual sys_buffer_writer* write(i16 val);
@@ -368,7 +363,7 @@ namespace basicsys {
 		virtual sys_buffer_writer* write(f32 val);
 		virtual sys_buffer_writer* write(f64 val);
 
-		virtual sys_buffer_writer* write(const wstring& val);
+		virtual sys_buffer_writer* write(const string& val);
 
 		virtual i64 position() const {
 			return m_position;
@@ -378,14 +373,14 @@ namespace basicsys {
 
 	protected:
 
-		wstring* m_str;
+		string* m_str;
 		i64 m_position;
 	};
 
 	class sys_string_buffer_reader : public sys_buffer_reader {
 	public:
 
-		sys_string_buffer_reader(const wstring& str) {
+		sys_string_buffer_reader(const string& str) {
 			m_str = &str;
 			m_position = 0;
 		}
@@ -407,19 +402,19 @@ namespace basicsys {
 		}
 
 		virtual double read(i32 size) const;
-		virtual c16 read_char() const;
+		virtual i8 read_char() const;
 
-		virtual wstring read_str(i32 size) const {
-			wstring text;
+		virtual string read_str(i32 size) const {
+			string text;
 			read_str(text, size);
 			return text;
 		}
 
-		virtual void read_str(wstring& str, i32 size) const;
+		virtual void read_str(string& str, i32 size) const;
 
-		virtual void read_line(wstring& line) const;
-		wstring read_line() const {
-			wstring str;
+		virtual void read_line(string& line) const;
+		string read_line() const {
+			string str;
 			read_line(str);
 			return str;
 		}
@@ -429,7 +424,7 @@ namespace basicsys {
 		}
 
 		virtual i64 size() const {
-			return (i64)m_str->size() * sizeof(c16);
+			return (i64)m_str->size() * sizeof(i8);
 		}
 
 		virtual sys_buffer_reader* seek(i64 offset, sys_File_Seek seek_type);
@@ -442,7 +437,7 @@ namespace basicsys {
 
 	protected:
 
-		const wstring* m_str;
+		const string* m_str;
 		mutable i64 m_position;
 	};
 
@@ -451,7 +446,7 @@ namespace basicsys {
 	class sys_string_file_buffer_writer : public sys_string_buffer_writer {
 	public:
 
-		sys_string_file_buffer_writer(const wstring& file_path, b8 is_append = false);
+		sys_string_file_buffer_writer(const string& file_path, b8 is_append = false);
 		sys_string_file_buffer_writer(FILE* file, b8 need_close_file = false);
 
 		virtual ~sys_string_file_buffer_writer();
@@ -462,7 +457,7 @@ namespace basicsys {
 			return m_file == NULL;
 		}
 
-		virtual sys_buffer_writer* write(const wstring& val);
+		virtual sys_buffer_writer* write(const string& val);
 
 		virtual i64 position() const;
 		
@@ -482,7 +477,7 @@ namespace basicsys {
 	class sys_string_file_buffer_reader : public sys_string_buffer_reader {
 	public:
 
-		sys_string_file_buffer_reader(const wstring& file_path);
+		sys_string_file_buffer_reader(const string& file_path);
 		sys_string_file_buffer_reader(FILE* file, b8 need_close_file = false);
 
 		virtual ~sys_string_file_buffer_reader();
@@ -496,9 +491,9 @@ namespace basicsys {
 		
 
 		virtual f64 read(i32 size) const;
-		virtual c16 read_char() const;
-		virtual void read_str(wstring& str, i32 size) const;
-		virtual void read_line(wstring& str) const;
+		virtual i8 read_char() const;
+		virtual void read_str(string& str, i32 size) const;
+		virtual void read_line(string& str) const;
 
 		virtual i64 size() const;
 		virtual i64 position() const;

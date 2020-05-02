@@ -1,8 +1,10 @@
 #pragma once
 
-#include "mt_scalar_t.h"
 #include "mt_range_t.h"
 #include <limits>
+#include <algorithm>
+#include <cstdlib>
+#include <cmath>
 
 namespace basicmath {
 
@@ -181,15 +183,6 @@ namespace basicmath {
 		}
 
 		template<class T>
-		static void vec_from_scalar(vector<T>& dst, const mt_scalar_t<T>& src) {
-			dst.resize(sizeof(src.value) / sizeof(src.value[0]));
-
-			for (i32 i = 0; i < (i32)dst.size(); ++i) {
-				dst[i] = src.value[i];
-			}
-		}
-
-		template<class T>
 		static vector<T> vec_from_array(i32 size, const T* data) {
 			vector<T> dst;
 			vec_from_array(dst, size, data);
@@ -360,10 +353,10 @@ namespace basicmath {
 
 		template<class T>
 		static void instance_from_pointer(vector<T>& res, const vector<T*>& src) {
-			result.resize(res.size());
+			res.resize(res.size());
 
 			for (int i = 0; i < (int)res.size(); ++i) {
-				result[i] = *src[i];
+				res[i] = *src[i];
 			}
 		}
 
@@ -430,6 +423,14 @@ namespace basicmath {
 
 		static u32 one_number(u32 value);
 
+		static i32 add_five(i32 val);
+
+		static string max_lexi_order(const string& val);
+
+		static string battle_ship(const string& ships, const string& hits);
+
+		static void split_array_to_max_mean_sub_arrays(vector<i32>& a, vector<i32>&b , const vector<i32>& data);
+
 		static void enable_omp_mkl(b8 enable);
 
 		static i32 get_number_procs();
@@ -450,14 +451,6 @@ namespace basicmath {
 		return true;
 	}
 
-	
-}
-
-#ifndef __OPENCV_CORE_CVSTD_HPP__
-
-#define basicmath_std_abs
-
-namespace std {
 	static inline u8 abs(u8 v) {
 		return v;
 	}
@@ -473,5 +466,38 @@ namespace std {
 	static inline u64 abs(u64 v) {
 		return v;
 	}
+
+	using std::min;
+	using std::max;
+	using std::abs;
+	using std::swap;
+	using std::sqrt;
+	using std::exp;
+	using std::pow;
+	using std::log;
+	
 }
-#endif
+
+
+
+
+//string solution(string &S, int K) {
+//	// write your code in C++14 (g++ 6.2.0)
+//
+//	string infos[] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+//
+//	int index = 0;
+//
+//	for (int i = 0; i < 7; ++i) {
+//		if (S == infos[i]) {
+//			index = i;
+//		}
+//	}
+//
+//	index += K;
+//
+//
+//	index %= 7;
+//
+//	return infos[index];
+//}

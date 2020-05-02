@@ -40,7 +40,7 @@ i64 mt_mat_cache::get_memory_size() {
 }
 
 void mt_mat_cache::output_cache_statistic() {
-	basiclog_info2(L"m_get_number: "<<s_mat_cache.m_get_number<<L"m_cache_number: "<<s_mat_cache.m_cache_number);
+	basiclog_info2("m_get_number: "<<s_mat_cache.m_get_number<<"m_cache_number: "<<s_mat_cache.m_cache_number);
 }
 
 void mt_mat_cache::enable_cache(b8 enable) {
@@ -49,13 +49,18 @@ void mt_mat_cache::enable_cache(b8 enable) {
 		map<u64, thread_data>::iterator td = s_mat_cache.m_thread_data.find(sys_os::current_thread_id());
 
 		if (td == s_mat_cache.m_thread_data.end()) {
-			thread_data data;
-			data.m_enable = enable;
+			if (enable) {
+				thread_data data;
+				data.m_enable = enable;
 
-			s_mat_cache.m_thread_data.insert(make_pair(sys_os::current_thread_id(), data));
+				s_mat_cache.m_thread_data.insert(make_pair(sys_os::current_thread_id(), data));
+			}
 		} else {
 			td->second.m_enable = enable;
-			s_mat_cache.statistic_memory();
+
+			if (!enable) {
+				s_mat_cache.m_caches.clear();
+			}
 		}
 	}
 }
@@ -136,7 +141,7 @@ void mt_mat_cache::statistic_memory() {
 	}
 
 	if (total_memory > m_memory_size && total_memory > used_memory * 2) {
-		basiclog_info2(sys_strcombine()<<L", begin release memory in mt_mat_cache, before total memory: "<<total_memory<<L", used memory: "<<used_memory);
+		basiclog_info2(sys_strcombine()<<", begin release memory in mt_mat_cache, before total memory: "<<total_memory<<", used memory: "<<used_memory);
 
 		i32 retain_memory = used_memory * 2;
 
@@ -156,6 +161,6 @@ void mt_mat_cache::statistic_memory() {
 			}
 		}
 
-		basiclog_info2(sys_strcombine()<<L"finish release memory in mt_mat_cache, memory after releasing: "<<total_memory);
+		basiclog_info2(sys_strcombine()<<"finish release memory in mt_mat_cache, memory after releasing: "<<total_memory);
 	}	
 }

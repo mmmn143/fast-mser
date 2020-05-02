@@ -2,25 +2,29 @@
 #include <stdarg.h>
 
 
-wstring sys_strhelper::combine(const wchar_t* pszFormat, ...) {
-	wchar_t szBuffer[102400];
+string sys_strhelper::combine(const char* pszFormat, ...) {
+	char szBuffer[102400];
 
 	va_list ptr;
 	va_start(ptr, pszFormat);
-	vswprintf_s(szBuffer, sizeof(szBuffer) / sizeof(wchar_t), pszFormat, ptr);
+#ifdef _WIN32
+	vsprintf_s(szBuffer, sizeof(szBuffer) / sizeof(char), pszFormat, ptr);
+#else
+	vsprintf_s(szBuffer, pszFormat, ptr);
+#endif
 	va_end(ptr);
 
-	return wstring(szBuffer);
+	return string(szBuffer);
 }
 
-vector<wstring> sys_strhelper::split(const wstring& text, const wstring& split_tag) {
-	vector<wstring> res;
+vector<string> sys_strhelper::split(const string& text, const string& split_tag) {
+	vector<string> res;
 	split(res, text, split_tag);
 
 	return res;
 }
 
-void sys_strhelper::split(vector<wstring>& elements, const wstring& text, const wstring& split_tag) {
+void sys_strhelper::split(vector<string>& elements, const string& text, const string& split_tag) {
 	elements.clear();
 
 	if (text.empty()) {
@@ -47,7 +51,7 @@ void sys_strhelper::split(vector<wstring>& elements, const wstring& text, const 
 	}
 }
 
-void sys_strhelper::replace(wstring& text, const wstring& newValue, const wstring& oldValue) {
+void sys_strhelper::replace(string& text, const string& newValue, const string& oldValue) {
 	for(string::size_type pos = 0; pos != string::npos; pos += newValue.length())   {     
 		if ((pos = text.find(oldValue, pos)) != string::npos) {
 			text.replace(pos, oldValue.length(), newValue);     
@@ -57,17 +61,17 @@ void sys_strhelper::replace(wstring& text, const wstring& newValue, const wstrin
 	}    
 }
 
-void sys_strhelper::trim_left(wstring& text, c16 c) {
-	wstring::size_type pos = text.find_first_not_of(c);
+void sys_strhelper::trim_left(string& text, i8 c) {
+	string::size_type pos = text.find_first_not_of(c);
 
-	if (pos == wstring::npos) {
-		text = L"";
+	if (pos == string::npos) {
+		text = "";
 	} else if (pos > 0) {
 		text.erase(text.begin(), text.begin() + pos);
 	}
 }
 
-int sys_strhelper::levenshtein_distance(const wstring& word1, const wstring& word2, int insertCost, int replaceCost, int deleteCost, bool ingoreCase) {	
+int sys_strhelper::levenshtein_distance(const string& word1, const string& word2, int insertCost, int replaceCost, int deleteCost, bool ingoreCase) {	
 	//See details in http://www.cnblogs.com/ymind/archive/2012/03/27/fast-memory-efficient-Levenshtein-algorithm.html
 
 	//Process the exception
@@ -78,11 +82,11 @@ int sys_strhelper::levenshtein_distance(const wstring& word1, const wstring& wor
 	}
 
 	//Select the small string as base to reduce the memory requirement
-	const wstring* smallString = &word1;
-	const wstring* largeString = &word2;
+	const string* smallString = &word1;
+	const string* largeString = &word2;
 
-	wstring tempWord1;
-	wstring tempWord2;
+	string tempWord1;
+	string tempWord2;
 	if (ingoreCase) {
 		tempWord1 = word1;
 		tempWord2 = word2;
@@ -113,12 +117,12 @@ int sys_strhelper::levenshtein_distance(const wstring& word1, const wstring& wor
 
 #define STRING_DEFINE_CALCULATE_DIST(dataType)	\
 	p[0] = 0;	\
-	for (wstring::size_type i = 1; i <= size2; ++i) {	\
+	for (string::size_type i = 1; i <= size2; ++i) {	\
 	p[i] = p[i - 1] + (dataType)insertCost;	\
 	}	\
-	for (wstring::size_type i = 1; i <= size1; ++i) {	\
+	for (string::size_type i = 1; i <= size1; ++i) {	\
 	q[0] = p[0] + deleteCost;	\
-	for (wstring::size_type j = 1; j <= size2; ++j) {	\
+	for (string::size_type j = 1; j <= size2; ++j) {	\
 	dataType d_del = p[j] + (dataType)deleteCost;	\
 	dataType d_ins = q[j - 1] + (dataType)insertCost;	\
 	dataType d_replace = p[j - 1] + ((*largeString)[i - 1] == (*smallString)[j - 1] ? 0 : (dataType)replaceCost);	\
@@ -164,18 +168,18 @@ int sys_strhelper::levenshtein_distance(const wstring& word1, const wstring& wor
 	return dist;
 }
 
-void sys_strhelper::upper(wstring& text) {
+void sys_strhelper::upper(string& text) {
 	std::transform(text.begin(), text.end(), text.begin(), towupper);
 }
 
-void sys_strhelper::lower(wstring& text) {
+void sys_strhelper::lower(string& text) {
 	std::transform(text.begin(), text.end(), text.begin(), towlower);
 }
 
-bool sys_strhelper::equal(const wstring& str1, const wstring& str2, bool ingoreCase /* = true */) {
+bool sys_strhelper::equal(const string& str1, const string& str2, bool ingoreCase /* = true */) {
 	if (ingoreCase) {
-		wstring temp1 = str1;
-		wstring temp2 = str2;
+		string temp1 = str1;
+		string temp2 = str2;
 		upper(temp1);
 		upper(temp2);
 		return temp1 == temp2;
@@ -184,17 +188,17 @@ bool sys_strhelper::equal(const wstring& str1, const wstring& str2, bool ingoreC
 	}
 }
 
-vector<wstring> sys_strhelper::wstring_from_char_array(int argc, char** argv) {
-	vector<wstring> argvs;
+vector<string> sys_strhelper::wstring_from_char_array(int argc, char** argv) {
+	vector<string> argvs;
 	wstring_from_char_array(argvs, argc, argv);
 
 	return argvs;
 }
 
-void sys_strhelper::wstring_from_char_array(vector<wstring>& argvs, int argc, char** argv) {
+void sys_strhelper::wstring_from_char_array(vector<string>& argvs, int argc, char** argv) {
 	argvs.resize(argc);
 
 	for (int i = 0; i < argc; ++i) {
-		argvs[i] = sys_strconvert::utf16_from_ansi(argv[i]);
+		argvs[i] = argv[i];
 	}
 }

@@ -11,9 +11,9 @@ namespace basicimg {
 
 		cv_font();
 
-		cv_font(const wstring& name, i32 size, b8 italic = sys_false, b8 bold = sys_false, b8 under_line = sys_false);
+		cv_font(const string& name, i32 size, b8 italic = sys_false, b8 bold = sys_false, b8 under_line = sys_false);
 
-		wstring m_font_name;
+		string m_font_name;
 		i32 m_size;
 		b8 m_italic;
 		b8 m_bold;
@@ -171,11 +171,11 @@ namespace basicimg {
 			String_Format_Flags_No_Clip                      = 0x00004000,
 		};
 
-		static mt_size measure_text_size(const wstring& text, const cv_font& font, i32 format = 0);
+		static mt_size measure_text_size(const string& text, const cv_font& font, i32 format = 0);
 
-		void draw_text(const wstring& text, const mt_rect& rect, const cv_font& font, const mt_scalar& color, i32 horizontal_align_type = String_Alignment_Near, i32 vertical_align_type = String_Alignment_Near, i32 format = 0);
+		void draw_text(const string& text, const mt_rect& rect, const cv_font& font, const mt_scalar& color, i32 horizontal_align_type = String_Alignment_Near, i32 vertical_align_type = String_Alignment_Near, i32 format = 0);
 
-		void draw_text(const wstring& text, const mt_point& offset, const cv_font& font, const mt_scalar& color, i32 horizontal_align_type = String_Alignment_Near, i32 vertical_align_type = String_Alignment_Near, i32 format = 0);
+		void draw_text(const string& text, const mt_point& offset, const cv_font& font, const mt_scalar& color, i32 horizontal_align_type = String_Alignment_Near, i32 vertical_align_type = String_Alignment_Near, i32 format = 0);
 
 	private:
 

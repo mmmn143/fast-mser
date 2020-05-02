@@ -2026,7 +2026,7 @@ mt_mat mt_mat::clone() const {
 	mt_mat res(m_dims, size(), m_depth_channel);
 	res.set(*this);
 
-	if (m_auto_derivative != NULL && m_auto_derivative->math_operation_recorded()) {
+	if (m_auto_derivative != NULL && m_auto_derivative->stage() == mt_auto_derivative::Stage_Record_Computing) {
 		res.attach(m_auto_derivative);
 
 		m_auto_derivative->clone(res, *this);
@@ -2135,7 +2135,13 @@ i32 mt_mat::channel_memory_size() const {
 }
 
 u8* mt_mat::memory_data() {
-	u8* ptr_data = data();
+	on_vaule_changed();
+
+	return const_cast<u8*>((const_cast<const mt_mat*>(this))->memory_data());
+}
+
+const u8* mt_mat::memory_data() const {
+	const u8* ptr_data = data();
 
 	for (int i = 0; i < dim(); ++i) {
 		if (step()[i] < 0) {
@@ -2144,10 +2150,6 @@ u8* mt_mat::memory_data() {
 	}
 
 	return ptr_data;
-}
-
-const u8* mt_mat::memory_data() const {
-	return (const_cast<mt_mat*>(this))->memory_data();
 }
 
 int mt_mat::element_number() const {
@@ -2196,7 +2198,7 @@ mt_mat mt_mat::increase_dim(int added_dim) const {
 }
 
 mt_mat mt_mat::decrease_dim(int deleted_dim) const {
-	basiclog_assert_message2(size()[deleted_dim] == 1, L"Only the dimension of size is 1 can be deleted!");
+	basiclog_assert_message2(size()[deleted_dim] == 1, "Only the dimension of size is 1 can be deleted!");
 
 	if (deleted_dim == 0) {
 		return combine_dim(0, 2);
@@ -2261,7 +2263,7 @@ mt_mat mt_mat::reshape(int dims, const int* sizes, i32 new_channel) const {
 
 	res.fill_auto_step();
 
-	if (m_auto_derivative != NULL && m_auto_derivative->math_operation_recorded()) {
+	if (m_auto_derivative != NULL && m_auto_derivative->stage() == mt_auto_derivative::Stage_Record_Computing) {
 		res.attach(m_auto_derivative);
 
 		m_auto_derivative->reshape(res, *this);
@@ -2345,7 +2347,7 @@ mt_mat mt_mat::combine_dim(int combined_dim_start, int combined_dim_count) const
 	}
 
 	if (!order_dim) {
-		basiclog_warning2(L"combine dim for a mat with unordered dim, this will reduce the performance! You should better input an ordered mat");
+		basiclog_warning2("combine dim for a mat with unordered dim, this will reduce the performance! You should better input an ordered mat");
 		return this->clone().combine_dim(combined_dim_start, combined_dim_count);
 	}
 
@@ -2454,7 +2456,7 @@ mt_mat mt_mat::repeat(i32 dims, const i32* nsizes, i32 nchannels) const {
 		}
 	}
 
-	if (m_auto_derivative != NULL && m_auto_derivative->math_operation_recorded()) {
+	if (m_auto_derivative != NULL && m_auto_derivative->stage() == mt_auto_derivative::Stage_Record_Computing) {
 		res.attach(m_auto_derivative);
 
 		m_auto_derivative->repeat(res, *this);
@@ -2472,6 +2474,8 @@ mt_mat mt_mat::t() const {
 }
 
 mt_mat mt_mat::swap_dim(int dim_a, int dim_b) const {
+	basiclog_assert2(m_auto_derivative == NULL || m_auto_derivative->stage() != mt_auto_derivative::Stage_Record_Computing);
+
 	mt_mat res = *this;
 
 	swap(res.size()[dim_a], res.size()[dim_b]);
@@ -2489,7 +2493,7 @@ void mt_mat::fill_auto_step() {
 }
 
 void mt_mat::on_vaule_changed() {
-	basiclog_assert2(m_auto_derivative == NULL || !m_auto_derivative->math_operation_recorded());
+	basiclog_assert2(m_auto_derivative == NULL || m_auto_derivative->stage() == mt_auto_derivative::Stage_Ignore);
 }
 
 mt_mat mt_mat::flip(int dim) const {
@@ -2541,7 +2545,7 @@ mt_mat mt_mat::flip(i32 size, const basicsys::b8* flip_flags) const {
 		}
 	}
 
-	if (m_auto_derivative != NULL && m_auto_derivative->math_operation_recorded()) {
+	if (m_auto_derivative != NULL && m_auto_derivative->stage() == mt_auto_derivative::Stage_Record_Computing) {
 		res.attach(m_auto_derivative);
 
 		m_auto_derivative->flip(res, *this, size, flip_flags);
@@ -2594,10 +2598,10 @@ mt_mat mt_mat::channel_as_last_dim() const {
 }
 
 mt_mat mt_mat::last_dim_as_channel() const {
-	basiclog_assert_message2(m_dims > 1, L"dimension must be exceed 1, you can use increase_dim() method!");
-	basiclog_assert_message2(channel() == 1, L"channel in the the last dimension must be 1!");
-	basiclog_assert_message2(step()[m_dims - 1] > 0, L"step in the last dimension must be positive, maybe you used the flip() method!");
-	basiclog_assert_message2(mt_array_iteration::get_continuous_dim(m_dims, size(), step(), element_channel_size()) < m_dims, L"data in the last dimension must be continuous, maybe you used the t() or swap() method!");
+	basiclog_assert_message2(m_dims > 1, "dimension must be exceed 1, you can use increase_dim() method!");
+	basiclog_assert_message2(channel() == 1, "channel in the the last dimension must be 1!");
+	basiclog_assert_message2(step()[m_dims - 1] > 0, "step in the last dimension must be positive, maybe you used the flip() method!");
+	basiclog_assert_message2(mt_array_iteration::get_continuous_dim(m_dims, size(), step(), element_channel_size()) < m_dims, "data in the last dimension must be continuous, maybe you used the t() or swap() method!");
 
 	mt_mat res;
 	res.m_dims = m_dims - 1;
@@ -2664,19 +2668,19 @@ mt_mat mt_mat::sub_channel(i32 start_channel, i32 stop_channel) const {
 }
 
 mt_mat mt_mat::row(int row) const {
-	basiclog_assert(L"mt_mat", m_dims == 2);
+	basiclog_assert("mt_mat", m_dims == 2);
 
 	return index(row, 0);
 }
 
 mt_mat mt_mat::col(int col) const {
-	basiclog_assert(L"mt_mat", m_dims == 2);
+	basiclog_assert("mt_mat", m_dims == 2);
 
 	return index(col, 1);
 }
 
 mt_mat mt_mat::plane(int plane) const {
-	basiclog_assert(L"mt_mat", m_dims == 3);
+	basiclog_assert("mt_mat", m_dims == 3);
 
 	return index(plane, 2);
 }
@@ -2728,7 +2732,7 @@ mt_mat mt_mat::sub(i32 dims, const mt_range* ranges) const {
 	res.m_data = m_data;
 
 	for (int i = 0; i < res.m_dims; ++i) {
-		basiclog_assert(L"mt_mat", ranges[i].size() > 0 && (ranges[i].m_end <= size()[i]));
+		basiclog_assert("mt_mat", ranges[i].size() > 0 && (ranges[i].m_end <= size()[i]));
 
 		res.m_data += ranges[i].m_start * step()[i];
 		res.step()[i] = step()[i];
@@ -2776,7 +2780,7 @@ mt_mat mt_mat::sub(const mt_range& range, int dim) const {
 	basicmath_mat_release(ranges);
 	return sub(m_dims, ranges);
 
-	/*basiclog_assert(L"mt_mat", range.is_valid() && (range.m_end <= this->size()[dim]));
+	/*basiclog_assert("mt_mat", range.is_valid() && (range.m_end <= this->size()[dim]));
 
 	mt_mat res;
 

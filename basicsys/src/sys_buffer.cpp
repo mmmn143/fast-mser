@@ -18,13 +18,6 @@ sys_buffer_writer* sys_byte_buffer_writer::write(i8 val) {
 	return write(start, stop);
 }
 
-sys_buffer_writer* sys_byte_buffer_writer::write(c16 val) {
-	u8* start = (u8*)&val;
-	u8* stop = start + sizeof(val);
-
-	return write(start, stop);
-}
-
 sys_buffer_writer* sys_byte_buffer_writer::write(u8 val) {
 	u8* start = (u8*)&val;
 	u8* stop = start + sizeof(val);
@@ -106,9 +99,9 @@ sys_buffer_writer* sys_byte_buffer_writer::write(const u8* buffer_start, const u
 	return this;
 }
 
-sys_buffer_writer* sys_byte_buffer_writer::write(const wstring& val) {
+sys_buffer_writer* sys_byte_buffer_writer::write(const string& val) {
 	u8* start = (u8*)val.c_str();
-	u8* stop = start + sizeof(c16) * (i32)val.size();
+	u8* stop = start + sizeof(i8) * (i32)val.size();
 
 	return write(start, stop);
 }
@@ -156,15 +149,6 @@ i8 sys_byte_buffer_reader::read_c8() const {
 
 u8 sys_byte_buffer_reader::read_u8() const {
 	u8 value;
-	u8* ptr_value = (u8*)&value;
-
-	read(ptr_value, sizeof(value));
-
-	return value;
-}
-
-c16 sys_byte_buffer_reader::read_c16() const {
-	c16 value;
 	u8* ptr_value = (u8*)&value;
 
 	read(ptr_value, sizeof(value));
@@ -244,24 +228,22 @@ f64 sys_byte_buffer_reader::read_f64() const {
 	return value;
 }
 
-void sys_byte_buffer_reader::read_str(wstring& str, i32 size) const {
-	basiclog_assert2(size % 2 == 0);
-
+void sys_byte_buffer_reader::read_str(string& str, i32 size) const {
 	if (remain_size() < size) {
 		m_io_status = sys_IO_Status_Error_Eof;
 		basiclog_assert2(sys_false);
 		return;
 	}
 
-	i32 character_number = size / 2;
+	i32 character_number = size;
 
-	c16* buffer = new c16[character_number + 1];
+	i8* buffer = new i8[character_number + 1];
 	buffer[character_number] = 0;
 
 	read((u8*)buffer, size);
 
 	if (m_io_status == sys_IO_Status_OK) {
-		str = wstring(buffer);
+		str = string(buffer);
 	}
 	
 	delete[] buffer;
@@ -311,18 +293,18 @@ sys_buffer_reader* sys_byte_buffer_reader::seek(i64 offset, sys_File_Seek seek_t
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //sys_byte_file_buffer_writer
 
-sys_byte_file_buffer_writer::sys_byte_file_buffer_writer(const wstring& file_path, b8 is_append /* = false */)
-	: sys_byte_buffer_writer(vector<u8>()) {
-		if (_wfopen_s(&m_file, file_path.c_str(), is_append ? L"wb+" : L"wb") != 0) {
+sys_byte_file_buffer_writer::sys_byte_file_buffer_writer(const string& file_path, b8 is_append /* = false */)
+	: sys_byte_buffer_writer(NULL) {
+		if (fopen_s(&m_file, file_path.c_str(), is_append ? "wb+" : "wb") != 0) {
 			m_io_status = sys_IO_Status_Error_File_Operation;
-			basiclog_warning2(L"failed to _wfopen_s");
+			basiclog_warning2("failed to _wfopen_s");
 		}
 
 		m_need_close_file = true;
 }
 
 sys_byte_file_buffer_writer::sys_byte_file_buffer_writer(FILE* file, b8 need_close_file)
-	: sys_byte_buffer_writer(vector<u8>()) {
+	: sys_byte_buffer_writer(NULL) {
 		m_file = file;
 		m_need_close_file = need_close_file;
 }
@@ -343,7 +325,7 @@ sys_buffer_writer* sys_byte_file_buffer_writer::write(const u8* start, const u8*
 
 	if (fwrite(start, stop - start, 1, m_file) != 1) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fwrite");
+		basiclog_warning2("failed to fwrite");
 	}
 
 	return this;
@@ -354,7 +336,7 @@ i64 sys_byte_file_buffer_writer::position() const {
 
 	if (fgetpos(m_file, &res) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fgetpos");
+		basiclog_warning2("failed to fgetpos");
 	}
 
 	return res;
@@ -363,7 +345,7 @@ i64 sys_byte_file_buffer_writer::position() const {
 sys_buffer_writer* sys_byte_file_buffer_writer::seek(i64 offset, sys_File_Seek seek_type) {
 	if (fseek(m_file, (long)offset, seek_type) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fseek");
+		basiclog_warning2("failed to fseek");
 	}
 
 	return this;
@@ -373,11 +355,11 @@ sys_buffer_writer* sys_byte_file_buffer_writer::seek(i64 offset, sys_File_Seek s
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //sys_byte_file_buffer_reader
-sys_byte_file_buffer_reader::sys_byte_file_buffer_reader(const wstring& file_path) 
+sys_byte_file_buffer_reader::sys_byte_file_buffer_reader(const string& file_path) 
 : sys_byte_buffer_reader(NULL, NULL) {
-	if (_wfopen_s(&m_file, file_path.c_str(), L"rb") != 0) {
+	if (fopen_s(&m_file, file_path.c_str(), "rb") != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to _wfopen_s");
+		basiclog_warning2("failed to _wfopen_s");
 	}
 
 	m_need_close_file = true;
@@ -474,7 +456,7 @@ sys_byte_file_buffer_reader::~sys_byte_file_buffer_reader() {
 //	return value;
 //}
 //
-//void sys_byte_file_buffer_reader::read_str(wstring& str, i32 size) const {
+//void sys_byte_file_buffer_reader::read_str(string& str, i32 size) const {
 //	basiclog_assert2(size > 0 && size % 2 == 0);
 //
 //	if (remain_size() < size) {
@@ -494,7 +476,7 @@ sys_byte_file_buffer_reader::~sys_byte_file_buffer_reader() {
 //	}
 //
 //	if (m_io_status == sys_IO_Status_OK) {
-//		str = wstring(buffer);
+//		str = string(buffer);
 //	}
 //
 //	delete[] buffer;
@@ -535,7 +517,7 @@ void sys_byte_file_buffer_reader::read(u8* start, i32 size) const {
 
 	if (fread(start, size, 1, m_file) != 1) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fread");
+		basiclog_warning2("failed to fread");
 	}
 }
 
@@ -543,7 +525,7 @@ i64 sys_byte_file_buffer_reader::position() const {
 	i64 res = 0;
 	if (fgetpos(m_file, &res) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fgetpos");
+		basiclog_warning2("failed to fgetpos");
 
 		return -1;
 	}
@@ -555,26 +537,26 @@ i64 sys_byte_file_buffer_reader::size() const {
 	i64 cur_pos = 0;
 	if (fgetpos(m_file, &cur_pos) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fgetpos");
+		basiclog_warning2("failed to fgetpos");
 		return -1;
 	}
 
 	if (fseek(m_file, 0, SEEK_END) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fseek");
+		basiclog_warning2("failed to fseek");
 		return -1;
 	}
 
 	i64 length = -1;
 	if (fgetpos(m_file, &length) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fgetpos");
+		basiclog_warning2("failed to fgetpos");
 		return -1;
 	}
 
 	if (fseek(m_file, (long)cur_pos, SEEK_SET) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fseek");
+		basiclog_warning2("failed to fseek");
 		return -1;
 	}
 
@@ -584,7 +566,7 @@ i64 sys_byte_file_buffer_reader::size() const {
 sys_buffer_reader* sys_byte_file_buffer_reader::seek(i64 offset, sys_File_Seek seek_type) {
 	if (fseek(m_file, (long)offset, seek_type) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fseek");
+		basiclog_warning2("failed to fseek");
 	}
 
 	return this;
@@ -597,7 +579,7 @@ sys_string_buffer_writer::~sys_string_buffer_writer() {
 	close();
 }
 
-sys_buffer_writer* sys_string_buffer_writer::write(const wstring& val) {
+sys_buffer_writer* sys_string_buffer_writer::write(const string& val) {
 	i32 writed_number = 0;
 	
 	for (i64 i = m_position; i < (i64)m_str->size() && writed_number < (i32)val.size(); ++i) {
@@ -617,10 +599,6 @@ sys_buffer_writer* sys_string_buffer_writer::write(b8 val) {
 }
 
 sys_buffer_writer* sys_string_buffer_writer::write(i8 val) {
-	return write(sys_strcombine()<<val);
-}
-
-sys_buffer_writer* sys_string_buffer_writer::write(c16 val) {
 	return write(sys_strcombine()<<val);
 }
 
@@ -661,14 +639,14 @@ sys_buffer_writer* sys_string_buffer_writer::write(f64 val) {
 }
 
 sys_buffer_writer* sys_string_buffer_writer::seek(i64 offset, sys_File_Seek seek_type) {
-	basiclog_assert2(offset % sizeof(c16) == 0);
+	basiclog_assert2(offset % sizeof(i8) == 0);
 
 	if (seek_type == sys_File_Seek_Set) {
 		m_position = offset;
 	} else if (seek_type == sys_File_Seek_Cur) {
 		m_position += offset;
 	} else {
-		m_position = (i64)m_str->size() * sizeof(c16) - offset;
+		m_position = (i64)m_str->size() * sizeof(i8) - offset;
 	}
 
 	return this;
@@ -683,62 +661,62 @@ f64 sys_string_buffer_reader::read(i32 size) const {
 		return 0;
 	}
 
-	wstring str;
+	string str;
 	read_str(str, size);
 
-	return _wtof(str.c_str());
+	return atof(str.c_str());
 }
 
-c16 sys_string_buffer_reader::read_char() const {
-	if (remain_size() < sizeof(c16)) {
+i8 sys_string_buffer_reader::read_char() const {
+	if (remain_size() < sizeof(i8)) {
 		m_io_status = sys_IO_Status_Error_Eof;
 		return 0;
 	}
 
-	return m_str->at(m_position / sizeof(c16));
-	m_position += sizeof(c16);
+	return m_str->at(m_position / sizeof(i8));
+	m_position += sizeof(i8);
 }
 
-void sys_string_buffer_reader::read_str(wstring& str, i32 size) const {
+void sys_string_buffer_reader::read_str(string& str, i32 size) const {
 	if (remain_size() < size) {
 		m_io_status = sys_IO_Status_Error_Eof;
 		return;
 	}
 
-	basiclog_assert2(size % sizeof(c16) == 0);
+	basiclog_assert2(size % sizeof(i8) == 0);
 
-	i32 start_index = (i32)m_position / (i32)sizeof(c16);
-	i32 number = size / (i32)sizeof(c16);
+	i32 start_index = (i32)m_position / (i32)sizeof(i8);
+	i32 number = size / (i32)sizeof(i8);
 
 	str = m_str->substr(start_index, number);
 
 	m_position += size;
 }
 
-void sys_string_buffer_reader::read_line(wstring& str) const {
+void sys_string_buffer_reader::read_line(string& str) const {
 	if (is_eof()) {
 		m_io_status = sys_IO_Status_Error_Eof;
 		return;
 	}
 
 	while (!is_eof()) {
-		c16 c = read_char();
+		i8 c = read_char();
 
-		if (c != L'\n') {
+		if (c != '\n') {
 			str.insert(str.end(), c);
 		}
 	}
 }
 
 sys_buffer_reader* sys_string_buffer_reader::seek(i64 offset, sys_File_Seek seek_type) {
-	basiclog_assert2(offset % sizeof(c16) == 0);
+	basiclog_assert2(offset % sizeof(i8) == 0);
 
 	if (seek_type == sys_File_Seek_Set) {
 		m_position = offset;
 	} else if (seek_type == sys_File_Seek_Cur) {
 		m_position += offset;
 	} else {
-		m_position = (i64)m_str->size() * sizeof(c16) - offset;
+		m_position = (i64)m_str->size() * sizeof(i8) - offset;
 	}
 
 	return this;
@@ -750,18 +728,18 @@ sys_buffer_reader* sys_string_buffer_reader::seek(i64 offset, sys_File_Seek seek
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //sys_string_file_buffer_writer
 
-sys_string_file_buffer_writer::sys_string_file_buffer_writer(const wstring& file_path, b8 is_append /* = false */)
-: sys_string_buffer_writer(wstring()) {
-	if (_wfopen_s(&m_file, file_path.c_str(), is_append ? L"wb+" : L"wb") != 0) {
+sys_string_file_buffer_writer::sys_string_file_buffer_writer(const string& file_path, b8 is_append /* = false */)
+: sys_string_buffer_writer(NULL) {
+	if (fopen_s(&m_file, file_path.c_str(), is_append ? "wb+" : "wb") != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to _wfopen_s");
+		basiclog_warning2("failed to _wfopen_s");
 	}
 
 	m_need_close_file = true;
 }
 
 sys_string_file_buffer_writer::sys_string_file_buffer_writer(FILE* file, b8 need_close_file)
-: sys_string_buffer_writer(wstring()) {
+: sys_string_buffer_writer(NULL) {
 	m_file = file;
 	m_need_close_file = need_close_file;
 }
@@ -778,13 +756,13 @@ void sys_string_file_buffer_writer::close() {
 	m_file = NULL;
 }
 
-sys_buffer_writer* sys_string_file_buffer_writer::write(const wstring& val) {
-	i32 size = (i32)val.size() * sizeof(c16);
+sys_buffer_writer* sys_string_file_buffer_writer::write(const string& val) {
+	i32 size = (i32)val.size() * sizeof(i8);
 	i32 f_res = val.empty() ? 0 : 1;
 
 	if (fwrite(val.c_str(), size, 1, m_file) != f_res) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fwrite");
+		basiclog_warning2("failed to fwrite");
 	}
 
 	return this;
@@ -795,7 +773,7 @@ i64 sys_string_file_buffer_writer::position() const {
 
 	if (fgetpos(m_file, &res) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fgetpos");
+		basiclog_warning2("failed to fgetpos");
 	}
 
 	return res;
@@ -804,7 +782,7 @@ i64 sys_string_file_buffer_writer::position() const {
 sys_buffer_writer* sys_string_file_buffer_writer::seek(i64 offset, sys_File_Seek seek_type) {
 	if (fseek(m_file, (long)offset, seek_type) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fseek");
+		basiclog_warning2("failed to fseek");
 	}
 
 	return this;
@@ -820,18 +798,18 @@ sys_buffer_writer* sys_string_file_buffer_writer::seek(i64 offset, sys_File_Seek
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //sys_string_file_buffer_reader
 
-sys_string_file_buffer_reader::sys_string_file_buffer_reader(const wstring& file_path)
-	: sys_string_buffer_reader(wstring()) {
-		if (_wfopen_s(&m_file, file_path.c_str(), L"rb") != 0) {
+sys_string_file_buffer_reader::sys_string_file_buffer_reader(const string& file_path)
+	: sys_string_buffer_reader(string()) {
+		if (fopen_s(&m_file, file_path.c_str(), "rb") != 0) {
 			m_file_io_status = sys_IO_Status_Error_File_Operation;
-			basiclog_warning2(L"failed to _wfopen_s");
+			basiclog_warning2("failed to _wfopen_s");
 		}
 
 		m_need_close_file = true;
 }
 
 sys_string_file_buffer_reader::sys_string_file_buffer_reader(FILE* file, b8 need_close_file)
-	: sys_string_buffer_reader(wstring()) {
+	: sys_string_buffer_reader(string()) {
 		m_file = file;
 		m_need_close_file = need_close_file;
 }
@@ -854,41 +832,41 @@ f64 sys_string_file_buffer_reader::read(i32 size) const {
 		return 0;
 	}
 
-	wstring text;
+	string text;
 	read_str(text, size);
 
-	return _wtof(text.c_str());
+	return atof(text.c_str());
 }
 
-c16 sys_string_file_buffer_reader::read_char() const {
+i8 sys_string_file_buffer_reader::read_char() const {
 	if (is_eof()) {
 		m_io_status = sys_IO_Status_Error_Eof;
 		return 0;
 	}
 
-	c16 c;
+	i8 c;
 
-	if (fread(&c, sizeof(c16), 1, m_file) != 1) {
+	if (fread(&c, sizeof(i8), 1, m_file) != 1) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
 	}
 
 	return c;
 }
 
-void sys_string_file_buffer_reader::read_str(wstring& str, i32 size) const {
+void sys_string_file_buffer_reader::read_str(string& str, i32 size) const {
 	if (is_eof()) {
 		m_io_status = sys_IO_Status_Error_Eof;
 		return;
 	}
 
-	i32 character_count = size / sizeof(wchar_t);
-	wchar_t* temp = new wchar_t[character_count + 1];
+	i32 character_count = size / sizeof(char);
+	char* temp = new char[character_count + 1];
 
 	i32 f_res = size == 0 ? 0 : 1;
 
 	if (fread(temp, size, 1, m_file) != f_res) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fread");
+		basiclog_warning2("failed to fread");
 	}
 
 	temp[character_count] = 0;
@@ -899,7 +877,7 @@ i64 sys_string_file_buffer_reader::position() const {
 	i64 res = 0;
 	if (fgetpos(m_file, &res) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fgetpos");
+		basiclog_warning2("failed to fgetpos");
 
 		return -1;
 	}
@@ -911,26 +889,26 @@ i64 sys_string_file_buffer_reader::size() const {
 	i64 cur_pos = 0;
 	if (fgetpos(m_file, &cur_pos) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fgetpos");
+		basiclog_warning2("failed to fgetpos");
 		return -1;
 	}
 
 	if (fseek(m_file, 0, SEEK_END) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fseek");
+		basiclog_warning2("failed to fseek");
 		return -1;
 	}
 
 	i64 length = -1;
 	if (fgetpos(m_file, &length) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fgetpos");
+		basiclog_warning2("failed to fgetpos");
 		return -1;
 	}
 
 	if (fseek(m_file, (long)cur_pos, SEEK_SET) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fseek");
+		basiclog_warning2("failed to fseek");
 		return -1;
 	}
 
@@ -940,23 +918,23 @@ i64 sys_string_file_buffer_reader::size() const {
 sys_buffer_reader* sys_string_file_buffer_reader::seek(i64 offset, sys_File_Seek seek_type) {
 	if (fseek(m_file, (long)offset, seek_type) != 0) {
 		m_io_status = sys_IO_Status_Error_File_Operation;
-		basiclog_warning2(L"failed to fseek");
+		basiclog_warning2("failed to fseek");
 
 	}
 
 	return this;
 }
 
-void sys_string_file_buffer_reader::read_line(wstring& str) const {
+void sys_string_file_buffer_reader::read_line(string& str) const {
 	if (is_eof()) {
 		m_io_status = sys_IO_Status_Error_Eof;
 		return;
 	}
 
 	while (!is_eof()) {
-		c16 c = read_char();
+		i8 c = read_char();
 
-		if (c != L'\n') {
+		if (c != '\n') {
 			str.insert(str.end(), c);
 		}
 	}

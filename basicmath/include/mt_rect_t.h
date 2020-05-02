@@ -34,13 +34,6 @@ public:
 		m_height = rect.m_height;
 	}
 
-	mt_rect_t(const mt_mat& mat) {
-		m_left = 0;
-		m_top = 0;
-		m_width = mat.size()[1];
-		m_height = mat.size()[0];
-	}
-
 	bool operator==(const mt_rect_t<T>& other) const {
 		return m_left == other.m_left && m_top == other.m_top && m_width == other.m_width && m_height == other.m_height;
 	}
@@ -166,7 +159,7 @@ public:
 
 	void normlized() {
 		if (m_width < 0 || m_height < 0) {
-			*this = mt_rect_t<T>(mt_point_t<T>(min(m_left, right()), min(m_top, bottom())), Point_<T>(max(m_left, right()), max(m_top, bottom())));
+			*this = mt_rect_t<T>(mt_point_t<T>(min(m_left, right()), min(m_top, bottom())), mt_point_t<T>(max(m_left, right()), max(m_top, bottom())));
 		}
 	}
 
@@ -547,7 +540,7 @@ typedef mt_rect_t<int> mt_rect;
 
 template<class T>
 void write(basicsys::sys_strcombine& str, const mt_rect_t<T>& data) {
-	str<<L"["<<data.m_left<<L","<<data.m_top<<L","<<data.m_width<<L","<<data.m_height<<L"]";
+	str<<"["<<data.m_left<<","<<data.m_top<<","<<data.m_width<<","<<data.m_height<<"]";
 }
 
 }

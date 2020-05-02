@@ -6,7 +6,7 @@
 	} else {\
 		basicsys::sys_tester::get_instance()->add_case_condition((condition));	\
 		if (!(condition)) { \
-			basiclog_info(L"SYS_TEST", L"wrong condition");\
+			basiclog_info("SYS_TEST", "wrong condition");\
 		} \
 	}
 
@@ -15,7 +15,7 @@
 	basiclog_assert2((a) == (b));	\
 	} else {\
 	if ((a) != (b)) { \
-	if (log_logger::get_logger() != NULL && log_logger::get_logger()->is_enable_info()) log_logger::get_logger()->print(L"info", L"SYS_TEST_EQUAL", wstring(L#a) + wstring(L" is not equal to ") + wstring(L#b), __FILE__, __LINE__); \
+	if (log_logger::get_logger() != NULL && log_logger::get_logger()->is_enable_info()) log_logger::get_logger()->print("info", "SYS_TEST_EQUAL", string(#a) + string(" is not equal to ") + string(#b), __FILE__, __LINE__); \
 	basicsys::sys_tester::get_instance()->add_case_condition(false);	\
 	} else { \
 		basicsys::sys_tester::get_instance()->add_case_condition(true);	\
@@ -26,7 +26,7 @@
 #define sys_declare_test(name)	\
 	class name##_test : public sys_test_interface {	\
 	public:	\
-	void run(vector<wstring>& argvs);	\
+	void run(vector<string>& argvs);	\
 	};
 
 namespace basicsys {
@@ -62,6 +62,6 @@ namespace basicsys {
 	class sys_test_interface {
 	public:
 
-		virtual void run(vector<wstring>& argvs) = 0;
+		virtual void run(vector<string>& argvs) = 0;
 	};
 }

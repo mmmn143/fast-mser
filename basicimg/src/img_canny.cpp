@@ -16,7 +16,8 @@ void img_canny::clear_memory_cache() {
 		m_gradient_y = mt_mat();
 	}
 
-	m_stack.swap(vector<u8*>());
+	vector<u8*> temp;
+	m_stack.swap(temp);
 	basicsys_delete_array(m_buffer);
 	m_buffer_size = 0;
 }
@@ -99,7 +100,8 @@ void img_canny::canny_impl(mt_mat& edge) {
     int maxsize = max(1 << 10, cols * m_gradient_x.size()[0] / 10);
 	
 	if ((i32)m_stack.size() > maxsize * 4) {
-		m_stack.swap(vector<u8*>());
+		vector<u8*> temp;
+		m_stack.swap(temp);
 	}
 	
 	m_stack.resize(maxsize);

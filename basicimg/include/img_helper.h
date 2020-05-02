@@ -8,7 +8,7 @@ namespace basicimg {
 	class img_helper {
 	public:
 
-		static wstring get_resource_dir_path();
+		static string get_resource_dir();
 	};
 
 }

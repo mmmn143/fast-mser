@@ -34,8 +34,9 @@ namespace basicimg {
 
 		class linked_point {
 		public:
-			i32 m_next;
-			i32 m_pixel_offset;
+			linked_point* m_prev;
+			linked_point* m_next;
+			mt_point m_point;
 		};
 
 		class mser_region {
@@ -46,10 +47,12 @@ namespace basicimg {
 				Flag_Valid = 2,
 			};
 
-			u32 m_region_flag : 2;
-			u32 m_gray_level : 8;
-			u32 m_calculated_var : 1;
+			i8 m_region_flag;
 
+			u8 m_calculated_var;
+			u8 m_has_child;
+
+			u8 m_gray_level;
 			i32 m_size;
 			
 			union {
@@ -58,14 +61,17 @@ namespace basicimg {
 			};
 			
 			mser_region* m_parent;
-			i32 m_head;
+			linked_point* m_head;
+			linked_point* m_tail;
+			img_mser* m_mser;
+			mt_point* m_points;	//for debug
 		};
 
 		class connected_comp {
 		public:
 
-			i32 m_head;
-			i32 m_tail;
+			linked_point* m_head;
+			linked_point* m_tail;
 			mser_region* m_region;
 			i16 m_gray_level;	//to save value 256 we need the i16 type
 			i32 m_size;
@@ -114,7 +120,7 @@ namespace basicimg {
 
 		
 
-		void accumulate_comp(connected_comp* comp, i32 point);
+		void accumulate_comp(connected_comp* comp, linked_point* point);
 
 		void allocate_memory(const mt_mat& src, const img_mask_info<u8>& mask);
 

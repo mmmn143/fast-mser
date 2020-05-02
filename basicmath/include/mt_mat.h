@@ -1,5 +1,7 @@
 #pragma once
 
+#include "mt_rect_t.h"
+
 #define basicmath_mat_request_memory(data_type, name, need_size)	\
 	data_type fixed##name[mt_Mat_Normal_Support_Dim];	\
 	data_type* name = fixed##name; \
@@ -67,6 +69,10 @@ class mt_mat {
 		mt_mat(const mt_mat& other, const mt_rect& roi);
 
 		~mt_mat();
+
+		mt_rect rect() const {
+			return mt_rect(0, 0, size()[1], size()[0]);
+		}
 
 		void create(i32 cols, mt_Depth_Channel depth_channel);
 		void create(i32 rows, i32 cols, mt_Depth_Channel depth_channel);
@@ -267,6 +273,7 @@ class mt_mat {
 		}
 
 		u8* data() {
+			on_vaule_changed();
 			return m_data;
 		}
 
@@ -552,6 +559,8 @@ class mt_mat {
 		mt_mat abs() const;
 		mt_mat& self_abs();
 
+		mt_mat pooling(mt_Pooling_Type pooling_type, i32 size, const basicsys::i32* kernel_sizes, const basicsys::i32* strides) const;
+		mt_mat pooling(mt_Pooling_Type pooling_type, const vector<basicsys::i32>& kernel_sizes, const vector<basicsys::i32>& strides) const;
 		mt_mat pooling(mt_mat& mask_mat, mt_Pooling_Type pooling_type, i32 size, const basicsys::i32* kernel_sizes, const basicsys::i32* strides) const;
 		mt_mat pooling(mt_mat& mask_mat, mt_Pooling_Type pooling_type, const vector<basicsys::i32>& kernel_sizes, const vector<basicsys::i32>& strides) const;
 		mt_mat unpooling(const int* src_size, const mt_mat& mask_mat, mt_Pooling_Type pooling_type, i32 size, const int* kernel_sizes, const int* strides) const;

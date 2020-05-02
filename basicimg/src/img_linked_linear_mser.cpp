@@ -9,6 +9,7 @@ void img_linked_linear_mser::init_comp(connected_comp* comptr, mser_region*& reg
 	region->m_region_flag = mser_region::Flag_Unknow;
 
 	region->m_calculated_var = 0;
+	region->m_has_child = 0;
 	region->m_short_cut_offset = 0;
 	region->m_parent = NULL;
 	comptr->m_region = region;
@@ -20,6 +21,7 @@ void img_linked_linear_mser::new_region(connected_comp* comptr, mser_region*& re
 	region->m_region_flag = mser_region::Flag_Unknow;
 
 	region->m_calculated_var = 0;
+	region->m_has_child = 1;
 	region->m_short_cut_offset = 0;
 	region->m_parent = NULL;
 	comptr->m_region = region;
@@ -28,12 +30,14 @@ void img_linked_linear_mser::new_region(connected_comp* comptr, mser_region*& re
 
 void img_linked_linear_mser::merge_comp(connected_comp* comp1, connected_comp* comp2) {	
 	comp1->m_region->m_parent = comp2->m_region;
+	comp2->m_region->m_has_child = 1;
 
 	if (comp2->m_size > 0) {
-		basiclog_assert2(m_points[comp2->m_tail].m_next == -1);
-		basiclog_assert2(m_points[comp1->m_tail].m_next == -1);
+		basiclog_assert2(comp2->m_tail->m_next == NULL);
+		basiclog_assert2(comp1->m_tail->m_next == NULL);
 
-		m_points[comp2->m_tail].m_next = comp1->m_head;
+		comp2->m_tail->m_next = comp1->m_head;
+		comp1->m_head->m_prev = comp2->m_tail;
 		comp2->m_tail = comp1->m_tail;	
 	} else {
 		comp2->m_head = comp1->m_head;
@@ -44,11 +48,14 @@ void img_linked_linear_mser::merge_comp(connected_comp* comp1, connected_comp* c
 	comp2->m_size += comp1->m_size;
 }
 
-void img_linked_linear_mser::accumulate_comp(connected_comp* comp, i32 point) {
+void img_linked_linear_mser::accumulate_comp(connected_comp* comp, linked_point* point) {
 	if (comp->m_size > 0) {
-		m_points[point].m_next = comp->m_head;
+		point->m_next = comp->m_head;
+		comp->m_head->m_prev = point;
+		point->m_prev = NULL;
 	} else {
-		m_points[point].m_next = -1;
+		point->m_prev = NULL;
+		point->m_next = NULL;
 		comp->m_tail = point;
 	}
 
@@ -57,7 +64,7 @@ void img_linked_linear_mser::accumulate_comp(connected_comp* comp, i32 point) {
 }
 
 void img_linked_linear_mser::calculate_variation(mser_region& region) {
-	u32 grayLevelThreshold = region.m_gray_level + m_delta;
+	i32 grayLevelThreshold = region.m_gray_level + m_delta;
 
 	mser_region* parent = region.m_parent;
 	mser_region* temp = &region;
@@ -85,7 +92,7 @@ void img_linked_linear_mser::calculate_variation(mser_region& region) {
 }
 
 void img_linked_linear_mser::calculate_variance_with_cache(mser_region& region) {
-	u32 grayLevelThreshold = region.m_gray_level + m_delta;
+	i32 grayLevelThreshold = region.m_gray_level + m_delta;
 
 	mser_region* temp = &region + region.m_short_cut_offset;
 	mser_region* parent = temp->m_parent;
@@ -221,11 +228,30 @@ void img_linked_linear_mser::allocate_memory(const mt_mat& src, const img_mask_i
 		m_regions = (mser_region*)malloc(sizeof(mser_region) * area);
 	}
 
-	i32 memory_cost = sizeof(i16) * m_masked_image_size + sizeof(i16*) * m_heap_size + sizeof(linked_point) * m_point_size + sizeof(mser_region) * m_region_size
+	class temp_linked_point {
+	public:
+		i32 m_next;
+		i32 m_point;
+	};
+
+	class temp_mser_region {
+	public:
+		i32 m_flags;
+		i32 m_size;
+
+		union {
+			f32 m_var;
+			i32 m_short_cut_offset;
+		};
+
+		mser_region* m_parent;
+		i32 m_head;
+		//linked_point* m_tail;
+	};
+	
+	m_channel_total_running_memory += sizeof(i16) * m_masked_image_size + sizeof(i16*) * m_heap_size + sizeof(temp_linked_point) * m_point_size + sizeof(temp_mser_region) * m_region_size
 		+ sizeof(i16**) * 257 + sizeof(connected_comp) * 257 + sizeof(u32) * 257 * 2;
 
-	basiclog_info2(sys_strcombine()<<L"linear memory cost "<< memory_cost / 1024.0 / 1024.0 <<L"MB");
-	
 	i32 row_step = m_mask_activate_rect.m_width + 2;
 
 	if (img_Connected_Type_8_Neibour == m_connected_type) {
@@ -259,7 +285,6 @@ void img_linked_linear_mser::pre_process_image(const mt_mat& src, u8 gray_mask, 
 		level_size[i] = 0;
 	}
 
-	//第一行设置为已访问
 	for (i32 col = 0; col < activate_with_boundary; ++col) {
 		*imgptr++ = -1;
 	}
@@ -400,7 +425,6 @@ void img_linked_linear_mser::pre_process_image(const mt_mat& src, u8 gray_mask, 
 		}
 	}
 
-	//最后一行设置为已访问
 	for (i32 col = 0; col < activate_with_boundary; ++col) {
 		*imgptr++ = -1;
 	}
@@ -413,7 +437,7 @@ void img_linked_linear_mser::pre_process_image(const mt_mat& src, u8 gray_mask, 
 }
 
 void img_linked_linear_mser::extract_pass(i16* ioptr) {
-	//sys_timer timer(L"extract_pass");
+	//sys_timer timer("extract_pass");
 	//timer.begin();
 
 	i32 erCount = 0;
@@ -479,11 +503,10 @@ void img_linked_linear_mser::extract_pass(i16* ioptr) {
 
 		// get the current location
 		i32 imsk = (i32)(imgptr-ioptr);		
-		ptsptr->m_pixel_offset = imsk;
+		ptsptr->m_point.m_y = imsk / mask_image_width;
+		ptsptr->m_point.m_x = imsk - (ptsptr->m_point.m_y * mask_image_width);
 
-
-
-		accumulate_comp( comptr, (i32)(ptsptr - m_points));
+		accumulate_comp( comptr, ptsptr );
 		ptsptr++;
 		// get the next pixel from boundary heap
 		if ( **heap_cur ) {
@@ -492,6 +515,7 @@ void img_linked_linear_mser::extract_pass(i16* ioptr) {
 		} else {
 			++er_number;
 			comptr->m_region->m_head = comptr->m_head;
+			comptr->m_region->m_tail = comptr->m_tail;
 			comptr->m_region->m_size = comptr->m_size;
 
 			heap_cur++;
@@ -566,7 +590,7 @@ void img_linked_linear_mser::extract_pass(i16* ioptr) {
 	//BASICML_ASSERT(1 == nullParentCount);
 	//BASICML_ASSERT(erCount == );
 
-	basiclog_info2(sys_strcombine()<<L"er number "<<er_number << L" opencv mser number " << mser_number);
+	basiclog_info2(sys_strcombine()<<"er number "<<er_number << " opencv mser number " << mser_number);
 }
 
 void img_linked_linear_mser::recognize_mser() {
@@ -575,10 +599,10 @@ void img_linked_linear_mser::recognize_mser() {
 }
 
 void img_linked_linear_mser::recognize_mser_normal() {
-	//sys_timer time(L"determine_invalid");
+	//sys_timer time("determine_invalid");
 	//time.begin();
 
-	//sys_timer variance_t(L"calculate variance and nms");
+	//sys_timer variance_t("calculate variance and nms");
 	//variance_t.begin();
 
 	memset(m_level_size, 0, sizeof(u32) * 257);
@@ -610,7 +634,7 @@ void img_linked_linear_mser::recognize_mser_normal() {
 		++m_level_size[cur_region.m_gray_level];
 	}
 
-	//sys_timer nms(L"nms");
+	//sys_timer nms("nms");
 	//nms.begin();
 
 	i32 beforeUnkonwSize = totalUnkonwSize;
@@ -651,13 +675,131 @@ void img_linked_linear_mser::recognize_mser_normal() {
 
 	
 
-	//basiclog_info2(sys_strcombine()<<L"bad_variance_number "<<bad_variance_number);
-	//basiclog_info2(sys_strcombine()<<L"nms count "<<nmsCount);
+	//basiclog_info2(sys_strcombine()<<"bad_variance_number "<<bad_variance_number);
+	//basiclog_info2(sys_strcombine()<<"nms count "<<nmsCount);
 
 	remove_duplicated();	
 	
 	//time.end();
 }
+
+void img_linked_linear_mser::recognize_mser_with_parent_child_cache() {
+	//sys_timer time("determine_mser_parallel_4");
+	//time.begin();
+
+	u32 totalUnkonwSize = 0;
+
+	mser_region* cur_region;
+	mser_region* end_region;
+	mser_region* parent_region;
+
+	memset(m_level_size, 0, sizeof(u32) * 257);
+
+	i32 bad_variance_number = 0;
+	i32 tn = 0;
+
+	//sys_timer variance_t("calculate variance and nms");
+	//variance_t.begin();
+
+	i32 nms_count = 0;
+	cur_region = m_regions;
+	end_region = m_regions + m_er_number;
+
+	for (; cur_region != end_region; ++cur_region) {
+		if (m_delta > 0) {
+			if (cur_region->m_has_child == 0) {
+				mser_region* region_iter = cur_region;
+				mser_region* start_region = cur_region;
+				mser_region* child_region = NULL;
+				b8 need_break = sys_false;
+
+				while (region_iter != NULL) {
+					if (region_iter->m_calculated_var == 0) {
+						i32 grayLevelThreshold = region_iter->m_gray_level + m_delta;
+						parent_region = start_region->m_parent;
+
+						while (parent_region != NULL && parent_region->m_gray_level <= grayLevelThreshold) {
+							start_region = parent_region;
+							parent_region = parent_region->m_parent;
+						}
+
+						if (parent_region != NULL || start_region->m_gray_level == grayLevelThreshold) {
+							region_iter->m_var = (start_region->m_size - region_iter->m_size) / (f32)region_iter->m_size;
+						} else {
+							region_iter->m_var = -1;
+						}
+
+						region_iter->m_calculated_var = 1;
+
+						tn += 1;
+
+						if (region_iter->m_var > m_stable_variation) {
+							region_iter->m_region_flag = mser_region::Flag_Invalid;
+							bad_variance_number++;
+						} else if (region_iter->m_size < m_min_point || region_iter->m_size > m_max_point || NULL == region_iter->m_parent) {
+							region_iter->m_region_flag = mser_region::Flag_Invalid;
+						} else {
+							++totalUnkonwSize;
+							++m_level_size[region_iter->m_gray_level];
+						}
+					} else {
+						need_break = sys_true;
+					}
+
+					//nms
+					if (m_nms_similarity >= 0 
+						&& child_region != NULL
+						&& (child_region->m_region_flag != mser_region::Flag_Invalid || region_iter->m_region_flag != mser_region::Flag_Invalid)) {
+							if (child_region->m_var > 0 && region_iter->m_var > 0 && region_iter->m_gray_level == child_region->m_gray_level + 1) {
+								double subValue = region_iter->m_var - child_region->m_var;
+								if (subValue > m_nms_similarity) {
+									if (mser_region::Flag_Invalid != region_iter->m_region_flag) {
+										region_iter->m_region_flag = mser_region::Flag_Invalid;
+										--m_level_size[region_iter->m_gray_level];
+										--totalUnkonwSize;
+										++nms_count;
+
+									}
+								} else if (-subValue > m_nms_similarity) {
+									if (mser_region::Flag_Invalid != child_region->m_region_flag) {
+										child_region->m_region_flag = mser_region::Flag_Invalid;
+										--m_level_size[child_region->m_gray_level];
+										--totalUnkonwSize;
+										++nms_count;
+									}
+								} 
+							}
+
+					}
+
+					child_region = region_iter;
+					region_iter = region_iter->m_parent;
+
+					if (need_break) {
+						break;
+					}
+				} 
+			}
+		} else {
+			if (cur_region->m_size < m_min_point || cur_region->m_size > m_max_point || NULL == cur_region->m_parent) {
+				cur_region->m_region_flag = mser_region::Flag_Invalid;
+			} else {
+				++totalUnkonwSize;
+				++m_level_size[cur_region->m_gray_level];
+			}
+		}
+	}
+
+	//variance_t.end();
+
+	//basiclog_info2(sys_strcombine()<<"bad_variance_number "<<bad_variance_number);
+	//basiclog_info2(sys_strcombine()<<"nms count "<<nms_count);
+
+	remove_duplicated();
+	
+	//time.end();
+}
+
 
 void img_linked_linear_mser::remove_duplicated() {
 	mt_helper::integral_array<u32>(m_start_indexes, m_level_size, m_level_size + 256);
@@ -679,7 +821,7 @@ void img_linked_linear_mser::remove_duplicated() {
 
 		m_remove_duplicated_memory_helper.reserve(100);
 
-		//去重
+		// Remove duplicated regions
 		for (u32 i = 0; i < m_gray_order_region_size; ++i) {
 			mser_region* currentRegion = m_gray_order_regions[i];
 
@@ -740,9 +882,6 @@ void img_linked_linear_mser::extract_pixel_self_memory(img_multi_msers& msers, u
 	vector<img_mser>& mser_infos = (gray_mask == 0) ? msers.m_msers[0] : msers.m_msers[1];
 	mser_infos.resize(m_gray_order_region_size);
 	i32 index = 0;
-	i32 mask_image_width = m_mask_activate_rect.m_width + 2;
-
-	mt_point pt;
 
 	//提取
 	for (u32 i = 0; i < m_gray_order_region_size; ++i) {
@@ -752,36 +891,30 @@ void img_linked_linear_mser::extract_pixel_self_memory(img_multi_msers& msers, u
 		mser_infos[index].m_points = new mt_point[mser_infos[index].m_size];
 		mser_infos[index].m_memory_type = img_mser::Memory_Type_Self;
 
-		linked_point* lpt = &m_points[currentRegion.m_head];
+		linked_point* lpt = currentRegion.m_head;
 
-		pt.m_y = lpt->m_pixel_offset / mask_image_width;
-		pt.m_x = lpt->m_pixel_offset - (pt.m_y * mask_image_width);
-
-		i32 rowMin = pt.m_y;
-		i32 colMin = pt.m_x;
-		i32 rowMax = pt.m_y;
-		i32 colMax = pt.m_x;
+		i32 rowMin = lpt->m_point.m_y;
+		i32 colMin = lpt->m_point.m_x;
+		i32 rowMax = lpt->m_point.m_y;
+		i32 colMax = lpt->m_point.m_x;
 
 		for ( i32 j = 0; j < currentRegion.m_size; j++ )
 		{
-			pt.m_y = lpt->m_pixel_offset / mask_image_width;
-			pt.m_x = lpt->m_pixel_offset - (pt.m_y * mask_image_width);
+			mser_infos[index].m_points[j] = lpt->m_point;
 
-			mser_infos[index].m_points[j] = pt;
-
-			if (pt.m_x > colMax) {
-				colMax = pt.m_x;
-			} else if (pt.m_x < colMin) {
-				colMin = pt.m_x;
+			if (lpt->m_point.m_x > colMax) {
+				colMax = lpt->m_point.m_x;
+			} else if (lpt->m_point.m_x < colMin) {
+				colMin = lpt->m_point.m_x;
 			}
 
-			if (pt.m_y > rowMax) {
-				rowMax = pt.m_y;
-			} else if (pt.m_y < rowMin) {
-				rowMin = pt.m_y;
+			if (lpt->m_point.m_y > rowMax) {
+				rowMax = lpt->m_point.m_y;
+			} else if (lpt->m_point.m_y < rowMin) {
+				rowMin = lpt->m_point.m_y;
 			}
 
-			lpt = &m_points[lpt->m_next];
+			lpt = lpt->m_next;
 		}
 
 		mser_infos[index].m_rect.set_rect(mt_point(colMin, rowMin), mt_point(colMax, rowMax));
@@ -815,14 +948,11 @@ void img_linked_linear_mser::extract_pixel_share_memory(img_multi_msers& msers, 
 	//	memory_offset += cur_mser.m_size;
 	//}
 
-	//sys_timer ct(L"collect point");
+	//sys_timer ct("collect point");
 	//ct.begin();
 
 	i32 memory_number = 0;
 	i32 max_size = 0;
-	i32 mask_image_width = m_mask_activate_rect.m_width + 2;
-
-	mt_point pt;
 
 	//提取
 	for (u32 i = 0; i < m_gray_order_region_size; ++i) {
@@ -840,38 +970,31 @@ void img_linked_linear_mser::extract_pixel_share_memory(img_multi_msers& msers, 
 
 		memory_offset += cur_mser.m_size;
 
-		linked_point* lpt = &m_points[cur_region->m_head];
+		linked_point* lpt = cur_region->m_head;
 
-		pt.m_y = lpt->m_pixel_offset / mask_image_width;
-		pt.m_x = lpt->m_pixel_offset - (pt.m_y * mask_image_width);
-		
-		i32 rowMin = pt.m_y;
-		i32 colMin = pt.m_x;
-		i32 rowMax = pt.m_y;
-		i32 colMax = pt.m_x;
+		i32 rowMin = lpt->m_point.m_y;
+		i32 colMin = lpt->m_point.m_x;
+		i32 rowMax = lpt->m_point.m_y;
+		i32 colMax = lpt->m_point.m_x;
 
 		for ( i32 j = 0; j < cur_region->m_size; j++ )
 		{
-			pt.m_y = lpt->m_pixel_offset / mask_image_width;
-			pt.m_x = lpt->m_pixel_offset - (pt.m_y * mask_image_width);
-
-			cur_mser.m_points[j] = pt;
+			cur_mser.m_points[j] = lpt->m_point;
 			++memory_number;
 
-			if (pt.m_x > colMax) {
-				colMax = pt.m_x;
-			} else if (pt.m_x < colMin) {
-				colMin = pt.m_x;
+			if (lpt->m_point.m_x > colMax) {
+				colMax = lpt->m_point.m_x;
+			} else if (lpt->m_point.m_x < colMin) {
+				colMin = lpt->m_point.m_x;
 			}
 
-			if (pt.m_y > rowMax) {
-				rowMax = pt.m_y;
-			} else if (pt.m_y < rowMin) {
-				rowMin = pt.m_y;
+			if (lpt->m_point.m_y > rowMax) {
+				rowMax = lpt->m_point.m_y;
+			} else if (lpt->m_point.m_y < rowMin) {
+				rowMin = lpt->m_point.m_y;
 			}
 
-			
-			lpt = &m_points[lpt->m_next];
+			lpt = lpt->m_next;
 		}
 
 		cur_mser.m_rect.set_rect(mt_point(colMin, rowMin), mt_point(colMax, rowMax));
@@ -880,8 +1003,115 @@ void img_linked_linear_mser::extract_pixel_share_memory(img_multi_msers& msers, 
 	basiclog_assert2((memory_offset - memory) == region_memory_size);
 
 	//3000621
-	basiclog_info2(L"max size: " <<max_size);
+	basiclog_info2("max size: " <<max_size);
 
+	//ct.end();
+}
+
+void img_linked_linear_mser::extract_pixel_share_extraction_share_memory(img_multi_msers& msers, u8 gray_mask) {
+	vector<img_mser>& t_msers = msers.m_msers[(gray_mask == 0) ? 0 : 1];
+
+	mt_point*& memory = msers.m_memory[(gray_mask == 0) ? 0 : 1];
+	i32& region_memory_size = msers.m_memory_size[(gray_mask == 0) ? 0 : 1];
+
+	t_msers.resize(m_gray_order_region_size);
+	region_memory_size = m_channel_total_pixel_number;
+
+	memory = (mt_point*)malloc(sizeof(mt_point) * region_memory_size);
+	mt_point* memory_offset = memory;
+
+	mser_region* cur_region;
+	mser_region* real_region;
+	mser_region* parent_region;
+
+	for (u32 i = 0; i < m_gray_order_region_size; ++i) {
+		cur_region = m_gray_order_regions[i];
+		img_mser& cur_mser = t_msers[i];
+
+		cur_region->m_mser = &cur_mser;
+
+		cur_mser.m_memory_type = img_mser::Memory_Type_Share;
+		cur_mser.m_gray_level = (gray_mask == 0) ? cur_region->m_gray_level : (0xff - cur_region->m_gray_level);
+		cur_mser.m_points = memory_offset;
+		cur_region->m_points = memory_offset;
+		cur_mser.m_size = cur_region->m_size;
+
+		memory_offset += cur_mser.m_size;
+
+		//get valid parent
+		for (real_region = cur_region->m_parent; real_region != NULL && real_region->m_region_flag != mser_region::Flag_Valid; real_region = real_region->m_parent) {
+		}
+
+		parent_region = cur_region->m_parent;
+
+		cur_region->m_parent = real_region;
+
+		while (parent_region != NULL && parent_region != real_region) {
+			cur_region = parent_region->m_parent;
+
+			parent_region->m_parent = real_region;
+			parent_region = cur_region;
+		}
+	}
+
+	//extract self pixels
+
+	//sys_timer ct("collect point");
+	//ct.begin();
+	i32 memory_number = 0;
+	
+	for (u32 i = 0; i < m_gray_order_region_size; ++i) {
+		cur_region = m_gray_order_regions[i];
+		linked_point* lpt = cur_region->m_head;
+
+		i32 rowMin = lpt->m_point.m_y;
+		i32 colMin = lpt->m_point.m_x;
+		i32 rowMax = lpt->m_point.m_y;
+		i32 colMax = lpt->m_point.m_x;
+
+		for (;;) {
+			++memory_number;
+			if (lpt->m_point.m_x != -1) {
+				if (lpt->m_point.m_x > colMax) {
+					colMax = lpt->m_point.m_x;
+				} else if (lpt->m_point.m_x < colMin) {
+					colMin = lpt->m_point.m_x;
+				}
+
+				if (lpt->m_point.m_y > rowMax) {
+					rowMax = lpt->m_point.m_y;
+				} else if (lpt->m_point.m_y < rowMin) {
+					rowMin = lpt->m_point.m_y;
+				}
+
+				*cur_region->m_mser->m_points++ = lpt->m_point;
+				lpt->m_point.m_x = -1;
+			}
+
+			if (lpt == cur_region->m_tail) {
+				break;
+			}
+
+			lpt = lpt->m_next;
+		}
+
+		if (cur_region->m_head->m_prev != NULL) {
+			cur_region->m_head->m_prev->m_next = cur_region->m_tail;
+		}
+
+		parent_region = cur_region->m_parent;
+		i32 temp_size = (i32)(cur_region->m_mser->m_points - cur_region->m_points);
+		cur_region->m_mser->m_points -= cur_region->m_size;
+		basiclog_assert2(cur_region->m_size == temp_size);
+
+		if (parent_region != NULL && parent_region->m_region_flag == mser_region::Flag_Valid) {
+			memcpy(parent_region->m_mser->m_points, cur_region->m_mser->m_points, sizeof(mt_point) * cur_region->m_size);
+			parent_region->m_mser->m_points += cur_region->m_size;
+			//parent_region->m_mser->m_rect.adjust_by_append_rect(cur_region->m_mser->m_rect);
+		}
+	}
+
+	//basiclog_info2("memory number: " <<memory_number);
 	//ct.end();
 }
 
@@ -925,7 +1155,8 @@ void img_linked_linear_mser::clear_memory_cache() {
 	m_region_size = 0;
 	m_heap_size = 0;
 
-	m_remove_duplicated_memory_helper.swap(vector<mser_region*>());
+	vector<mser_region*> temp;
+	m_remove_duplicated_memory_helper.swap(temp);
 }
 
 void img_linked_linear_mser::get_duplicated_regions(vector<mser_region*>& duplicatedRegions, mser_region* stableRegion, mser_region* beginRegion) {
@@ -937,7 +1168,7 @@ void img_linked_linear_mser::get_duplicated_regions(vector<mser_region*>& duplic
 		}
 
 		if (parentRegion->m_size > m_max_point) {
-			//如果父亲节点较大,无须在寻找重复的父亲,因为父亲注定会被删掉
+			// If the size of parent is too large, we do not need to find duplicated parent regions (parent regions will be delete absolutely). 
 			break;
 		}
 
@@ -948,7 +1179,7 @@ void img_linked_linear_mser::get_duplicated_regions(vector<mser_region*>& duplic
 		}
 
 		if (mser_region::Flag_Valid == parentRegion->m_region_flag) {
-			basiclog_warning2(L"Too big mDuplicateVariantion");
+			basiclog_warning2("Too big mDuplicateVariantion");
 
 			parentRegion = parentRegion->m_parent;
 			continue;

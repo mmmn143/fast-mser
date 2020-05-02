@@ -7,17 +7,17 @@ namespace basicsys {
 
 		static void init();
 
-		static void set(const wstring& tag, i64 v);
+		static void set(const string& tag, i64 v);
 
-		static void add(const wstring& tag, i64 v);
+		static void add(const string& tag, i64 v);
 
-		static void max_(const wstring& tag, i64 v);
+		static void max_(const string& tag, i64 v);
 
 		static void release();
 
 	protected:
 
-		static map<wstring, i64> m_info;
+		static map<string, i64> m_info;
 		static void* m_mutex;
 	};
 

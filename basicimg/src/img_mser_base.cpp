@@ -85,7 +85,7 @@ void img_mser_base::extract(img_multi_msers& res, const mt_mat& gray_src, const 
 
 	i64 tick = sys_timer::get_tick_cout();
 	allocate_memory(gray_src, mask);
-	sys_alg_analyzer::add(L"initialization", sys_timer::get_tick_cout() - tick);
+	sys_alg_analyzer::add("initialization", sys_timer::get_tick_cout() - tick);
 
 	for (i32 i = 0; i < 2; ++i) {
 		if (m_from_min_max[i]) {
@@ -95,24 +95,24 @@ void img_mser_base::extract(img_multi_msers& res, const mt_mat& gray_src, const 
 
 			tick = sys_timer::get_tick_cout();
 			build_tree(gray_src, mask, gray_mask);
-			sys_alg_analyzer::add(L"building_tree", sys_timer::get_tick_cout() - tick);
+			sys_alg_analyzer::add("building_tree", sys_timer::get_tick_cout() - tick);
 
 			tick = sys_timer::get_tick_cout();
 			recognize_mser();
-			sys_alg_analyzer::add(L"recognition", sys_timer::get_tick_cout() - tick);
+			sys_alg_analyzer::add("recognition", sys_timer::get_tick_cout() - tick);
 
 			tick = sys_timer::get_tick_cout();
 			extract_pixel(res, gray_mask);
-			sys_alg_analyzer::add(L"extraction", sys_timer::get_tick_cout() - tick);
-			sys_alg_analyzer::add(L"pixel_number", m_channel_total_pixel_number);
+			sys_alg_analyzer::add("extraction", sys_timer::get_tick_cout() - tick);
+			sys_alg_analyzer::add("pixel_number", m_channel_total_pixel_number);
 		}
 	}
 
-	sys_alg_analyzer::max_(L"running_memory", m_channel_total_running_memory / 1024 / 1024);
+	sys_alg_analyzer::max_("running_memory", m_channel_total_running_memory / 1024 / 1024);
 
-	sys_alg_analyzer::add(L"mser_number", res.m_msers[0].size() + res.m_msers[1].size());
-	sys_alg_analyzer::add(L"mser_pt_number", res.m_memory_size[0] + res.m_memory_size[1]);
-	sys_alg_analyzer::add(L"mser_memory", (res.m_memory_size[0] + res.m_memory_size[1]) * sizeof(mt_point) / 1024 / 1024);
+	sys_alg_analyzer::add("mser_number", res.m_msers[0].size() + res.m_msers[1].size());
+	sys_alg_analyzer::add("mser_pt_number", res.m_memory_size[0] + res.m_memory_size[1]);
+	sys_alg_analyzer::add("mser_memory", (res.m_memory_size[0] + res.m_memory_size[1]) * sizeof(mt_point) / 1024 / 1024);
 }
 
 img_mser_base* img_mser_alg_factory::new_instance() {

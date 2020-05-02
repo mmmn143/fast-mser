@@ -10,12 +10,12 @@ namespace basicmath {
 				str << ptr_channel[c];
 
 				if (c != mat.channel() - 1) {
-					str<<L" ";
+					str<<" ";
 				}
 			}
 
 			if (row != mat.size()[0] - 1) {
-				str<<L", ";
+				str<<", ";
 			}
 
 			ptr_mat_dim0 += mat.step()[0];
@@ -26,7 +26,7 @@ namespace basicmath {
 	static void write_2d_mat(sys_strcombine& str, const mt_mat& mat) {
 		const u8* ptr_mat_dim0 = mat.data();
 		for (int row = 0; row < mat.size()[0]; ++row) {
-			str << L"\n";
+			str << "\n";
 
 			const u8* ptr_mat_dim1 = ptr_mat_dim0;
 
@@ -36,12 +36,12 @@ namespace basicmath {
 					str << ptr_channel[c];
 
 					if (c != mat.channel() - 1) {
-						str<<L" ";
+						str<<" ";
 					}
 				}
 
 				if (col != mat.size()[1] - 1) {
-					str<<L", ";
+					str<<", ";
 				}
 
 				ptr_mat_dim1 += mat.step()[1];
@@ -55,7 +55,7 @@ namespace basicmath {
 	static void write_3d_mat(sys_strcombine& str, const mt_mat& mat) {
 		const u8* ptr_mat_dim0 = mat.data();
 		for (int plane = 0; plane < mat.size()[0]; ++plane) {
-			str<<L"\n"<< plane << L"-th plane mat:\n";
+			str<<"\n"<< plane << "-th plane mat:\n";
 
 			const u8* ptr_mat_dim1 = ptr_mat_dim0;
 
@@ -69,18 +69,18 @@ namespace basicmath {
 						str << ptr_channel[c];
 
 						if (c != mat.channel() - 1) {
-							str<<L" ";
+							str<<" ";
 						}
 					}
 
 					if (col != mat.size()[2] - 1) {
-						str<<L", ";
+						str<<", ";
 					}
 
 					ptr_mat_dim2 += mat.step()[2];
 				}
 
-				str << L"\n";
+				str << "\n";
 				ptr_mat_dim1 += mat.step()[1];
 			}
 
@@ -89,10 +89,10 @@ namespace basicmath {
 	}
 
 	void write(sys_strcombine& str, const mt_mat& mat) {
-		wstring depth_channel_str = wstring(L", depth_channel: ") + mt_Depth_Channel::depth_channel_str(mat.depth_channel());
+		string depth_channel_str = string(", depth_channel: ") + mt_Depth_Channel::depth_channel_str(mat.depth_channel());
 
 		if (1 == mat.dim()) {
-			str<<L"1d mat: "<<mat.size()[0]<<depth_channel_str;
+			str<<"1d mat: "<<mat.size()[0]<<depth_channel_str;
 			switch (mat.depth()) {
 			case mt_U8:
 				write_1d_mat<u8>(str, mat);
@@ -127,7 +127,7 @@ namespace basicmath {
 			}
 
 		} else if (2 == mat.dim()) {
-			str<<L"2d mat: "<<mat.size()[0]<<L" * "<<mat.size()[1]<<depth_channel_str;
+			str<<"2d mat: "<<mat.size()[0]<<" * "<<mat.size()[1]<<depth_channel_str;
 			switch (mat.depth()) {
 			case mt_U8:
 				write_2d_mat<u8>(str, mat);
@@ -161,7 +161,7 @@ namespace basicmath {
 				break;
 			}
 		} else if (3 == mat.dim()) {
-			str<<L"3d mat: "<<mat.size()[0]<<L" * "<<mat.size()[1]<<L" * "<<mat.size()[2]<<depth_channel_str;
+			str<<"3d mat: "<<mat.size()[0]<<" * "<<mat.size()[1]<<" * "<<mat.size()[2]<<depth_channel_str;
 			switch (mat.depth()) {
 			case mt_U8:
 				write_3d_mat<u8>(str, mat);
@@ -217,20 +217,20 @@ namespace basicmath {
 	}
 
 	void write(basicsys::sys_json_writer& writer, const mt_mat& data) {
-		writer<<L"{";
+		writer<<"{";
 
-		writer<<L"sizes";
+		writer<<"sizes";
 
-		writer<<L"[";
+		writer<<"[";
 
 		for (i32 i = 0; i < data.dim(); ++i) {
 			writer<<data.size()[i];
 		}
 
-		writer<<L"]";
+		writer<<"]";
 
-		writer<<L"depth_channel"<<mt_Depth_Channel::depth_channel_str(data.depth_channel());
-		writer<<L"data"<<L"[";
+		writer<<"depth_channel"<<mt_Depth_Channel::depth_channel_str(data.depth_channel());
+		writer<<"data"<<"[";
 
 		switch (data.depth()) {
 		case mt_I8:
@@ -265,15 +265,15 @@ namespace basicmath {
 			break;
 		}
 
-		writer<<L"]";
-		writer<<L"}";
+		writer<<"]";
+		writer<<"}";
 	}
 
 	template<class T>
 	static void read_data_impl(u8* mat_data, const basicsys::sys_json_reader& reader) {
 		vector<T> buffer;
 
-		reader[L"data"]>>buffer;
+		reader["data"]>>buffer;
 
 		T* ptr_mat_data = (T*)mat_data;
 
@@ -284,12 +284,12 @@ namespace basicmath {
 
 	void read(mt_mat& data, const basicsys::sys_json_reader& reader) {
 		vector<i32> sizes;
-		reader[L"sizes"]>>sizes;
+		reader["sizes"]>>sizes;
 
 		if (sizes.empty()) {
 			data = mt_mat();
 		} else {
-			mt_Depth_Channel depth_channel = mt_Depth_Channel::depth_channel_i32(reader[L"depth_channel"].to_string());
+			mt_Depth_Channel depth_channel = mt_Depth_Channel::depth_channel_i32(reader["depth_channel"].to_string());
 			data = mt_mat((i32)sizes.size(), &sizes[0], depth_channel);
 
 			switch (data.depth()) {

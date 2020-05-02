@@ -19,15 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\sys_buffer_test.cpp" />
-    <ClCompile Include="..\..\src\sys_json_test.cpp" />
-    <ClCompile Include="..\..\src\sys_pointer_index_test.cpp" />
-    <ClCompile Include="..\..\src\sys_strcombine_test.cpp" />
-    <ClCompile Include="..\..\src\sys_strhelper_test.cpp" />
-    <ClCompile Include="..\..\src\test.cpp" />
+    <ClCompile Include="..\..\test\sys_buffer_test.cpp" />
+    <ClCompile Include="..\..\test\sys_json_test.cpp" />
+    <ClCompile Include="..\..\test\sys_pointer_index_test.cpp" />
+    <ClCompile Include="..\..\test\sys_strcombine_test.cpp" />
+    <ClCompile Include="..\..\test\sys_strconvert_test.cpp" />
+    <ClCompile Include="..\..\test\sys_strhelper_test.cpp" />
+    <ClCompile Include="..\..\test\test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\test.h" />
+    <ClInclude Include="..\..\test\test.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{488055ED-A1B9-4A57-9B30-E8CEA2A40E42}</ProjectGuid>

@@ -80,7 +80,7 @@ namespace basicmath {
 		static mt_mat read(const vector<vector<T>>& datas) {
 			basiclog_assert2(!datas.front().empty());
 
-			mt_mat res((basicsys::i32)datas.size(), (basicsys::i32)datas.front().size(), mt_make_depth_channel(depth_from_data_type(), 1));
+			mt_mat res((basicsys::i32)datas.size(), (basicsys::i32)datas.front().size(), mt_Depth_Channel(depth_from_data_type(), 1));
 
 			T* ptr_data = (T*)res.data();
 

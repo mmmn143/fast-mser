@@ -13,10 +13,10 @@ namespace basicimg {
 			Load_Color = 1,
 		};
 
-		static basicmath::mt_mat load(const wstring& path, Load_Type type = Load_Unchanged);
-		static void load(basicmath::mt_mat& img, const wstring& path, Load_Type type = Load_Unchanged);
+		static basicmath::mt_mat load(const string& path, Load_Type type = Load_Unchanged);
+		static void load(basicmath::mt_mat& img, const string& path, Load_Type type = Load_Unchanged);
 
-		static b8 save(const wstring& path, const basicmath::mt_mat& mat);
+		static b8 save(const string& path, const basicmath::mt_mat& mat);
 
 		enum Inter_Type {
 			Inter_Type_Nearest = 0,
@@ -69,6 +69,11 @@ namespace basicimg {
 			return dx + dy * row_step / pixel_size;
 		}
 
+		static void gaussian_blur(mt_mat& res, const mt_mat& src, const mt_size& kernel_size, f64 sigma_x, f64 sigma_y);
+		static mt_mat gaussian_blur(const mt_mat& src, const mt_size& kernel_size, f64 sigma_x, f64 sigma_y);
+
+		static void genarate_chessboard(mt_mat& res, const mt_size& image_size, i32 chess_size, i32 channel = 1);
+
 	protected:
 
 		static i32 depth_from_basiccv(mt_Depth depth);
@@ -78,6 +83,7 @@ namespace basicimg {
 		
 
 		static basicmath::mt_mat use_opencv_memory(cv::Mat& mat);
+		static void generate_gaussian_kernel(mt_mat& kernel, i32 size, f64 sigma);
 	};
 
 }

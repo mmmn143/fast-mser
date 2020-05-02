@@ -31,6 +31,6 @@ namespace basicmath {
 
 	template<class T>
 	void write(basicsys::sys_strcombine& str, const mt_range_t<T>& data) {
-		str<<L"["<<data.m_start<<L","<<data.m_end<<L"]";
+		str<<"["<<data.m_start<<","<<data.m_end<<"]";
 	}
 }

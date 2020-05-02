@@ -9,6 +9,7 @@
     <ClInclude Include="..\..\include\img_connected_component.h" />
     <ClInclude Include="..\..\include\img_edge_result.h" />
     <ClInclude Include="..\..\include\img_img.h" />
+    <ClInclude Include="..\..\include\img_linear_mser.h" />
     <ClInclude Include="..\..\include\img_matting.h" />
     <ClInclude Include="..\..\include\img_mser_base.h" />
     <ClInclude Include="..\..\include\img_mser_result.h" />
@@ -19,12 +20,21 @@
     <ClInclude Include="..\..\include\img_draw.h" />
     <ClInclude Include="..\..\include\img_mser_helper.h" />
     <ClInclude Include="..\..\src\stdafx\stdafx.h" />
+    <ClInclude Include="..\..\include\img_linked_parallel_mser.h" />
+    <ClInclude Include="..\..\include\img_pixel_parallel_mser.h" />
     <ClInclude Include="..\..\include\img_linked_linear_mser.h" />
+    <ClInclude Include="..\..\include\img_pixel_linear_mser.h" />
+    <ClInclude Include="..\..\include\img_pixel_linear_mser_v2.h" />
+    <ClInclude Include="..\..\include\img_pixel_parallel_mser_v2.h" />
+    <ClInclude Include="..\..\include\img_pixel_parallel_mser_v3.h" />
     <ClInclude Include="..\..\include\img_idiap_mser.h" />
     <ClInclude Include="..\..\include\img_vlfeat_mser.h" />
     <ClInclude Include="..\..\include\img_ms_mser.h" />
+    <ClInclude Include="..\..\include\img_linked_parallel_mser_v2.h" />
+    <ClInclude Include="..\..\include\img_pixel_parallel_mser_v4.h" />
     <ClInclude Include="..\..\include\img_fast_mser_v1.h" />
     <ClInclude Include="..\..\include\img_fast_mser_v2.h" />
+    <ClInclude Include="..\..\include\img_linked_parallel_mser_v3.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\img_auto_threshold_canny.cpp" />
@@ -34,6 +44,7 @@
     <ClCompile Include="..\..\src\img_draw_win_impl.cpp" />
     <ClCompile Include="..\..\src\img_helper.cpp" />
     <ClCompile Include="..\..\src\img_img.cpp" />
+    <ClCompile Include="..\..\src\img_linear_mser.cpp" />
     <ClCompile Include="..\..\src\img_mser_result.cpp" />
     <ClCompile Include="..\..\src\img_opencv3_mser.cpp" />
     <ClCompile Include="..\..\src\img_opencv_mser.cpp" />
@@ -41,11 +52,21 @@
     <ClCompile Include="..\..\src\img_stroke_width_transform.cpp" />
     <ClCompile Include="..\..\src\img_mser_base.cpp" />
     <ClCompile Include="..\..\src\img_mser_helper.cpp" />
+    <ClCompile Include="..\..\src\img_linked_parallel_mser.cpp" />
+    <ClCompile Include="..\..\src\img_pixel_parallel_mser.cpp" />
     <ClCompile Include="..\..\src\img_linked_linear_mser.cpp" />
+    <ClCompile Include="..\..\src\img_pixel_linear_mser.cpp" />
+    <ClCompile Include="..\..\src\img_pixel_linear_mser_v2.cpp" />
+    <ClCompile Include="..\..\src\img_pixel_parallel_mser_v2.cpp" />
+    <ClCompile Include="..\..\src\img_pixel_parallel_mser_v3.cpp" />
     <ClCompile Include="..\..\src\img_idiap_mser.cpp" />
     <ClCompile Include="..\..\src\img_vlfeat_mser.cpp" />
     <ClCompile Include="..\..\src\img_ms_mser.cpp" />
+    <ClCompile Include="..\..\src\img_linked_parallel_mser_v2.cpp" />
+    <ClCompile Include="..\..\src\img_pixel_parallel_mser_v4.cpp" />
     <ClCompile Include="..\..\src\img_fast_mser_v1.cpp" />
     <ClCompile Include="..\..\src\img_fast_mser_v2.cpp" />
+    <ClCompile Include="..\..\src\img_linked_parallel_mser_v3.cpp" />
+    <ClCompile Include="..\..\src\img_draw_macos_impl.cpp" />
   </ItemGroup>
 </Project>

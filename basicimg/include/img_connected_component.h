@@ -5,7 +5,7 @@
 #define basicimg_cc_n_begin()	\
 	normal_connected_info preInfo;\
 	normal_extract_start(preInfo, image, maskInfo, connect_type, 2000);\
-	image_pixel_type* start_image_data = preInfo.m_temp_image.ptr<image_pixel_type>(1, 1);	\
+	image_pixel_type* start_image_data = preInfo.m_temp_image.template ptr<image_pixel_type>(1, 1);	\
 	image_pixel_type* image_data = start_image_data;	\
 	image_pixel_type* top_image_data;	\
 	image_pixel_type* other_image_data;	\
@@ -59,7 +59,7 @@
 	normal_connected_info preInfo;	\
 	normal_extract_start(preInfo, image, maskInfo, connect_type, 1);	\
 	image_pixel_type* start_image_data = preInfo.m_temp_image.ptr<image_pixel_type>(1, 1);	\
-	image_pixel_type* image_data = preInfo.m_temp_image.ptr<image_pixel_type>(startPoint.m_y - preInfo.m_activate_rect.m_top + 1, startPoint.m_x - preInfo.m_activate_rect.m_left + 1);	\
+	image_pixel_type* image_data = preInfo.m_temp_image.template ptr<image_pixel_type>(startPoint.m_y - preInfo.m_activate_rect.m_top + 1, startPoint.m_x - preInfo.m_activate_rect.m_left + 1);	\
 	image_pixel_type* top_image_data;	\
 	image_pixel_type* other_image_data;	\
 	b8 connect_condition = false;	\
@@ -185,7 +185,7 @@ namespace basicimg {
 		virtual void normal_extract(img_multi_connected_components& ccs, const mt_mat& image, const img_mask_info<T>& maskInfo = img_mask_info<T>(), img_Connected_Type connect_type = img_Connected_Type_8_Neibour) {
 			normal_connected_info preInfo;
 			normal_extract_start(preInfo, image, maskInfo, connect_type, 2000);
-			image_pixel_type* start_image_data = preInfo.m_temp_image.ptr<image_pixel_type>(1, 1);
+			image_pixel_type* start_image_data = preInfo.m_temp_image.template ptr<image_pixel_type>(1, 1);
 			image_pixel_type* image_data = start_image_data;
 			image_pixel_type* top_image_data;
 			image_pixel_type* other_image_data;
@@ -198,7 +198,7 @@ namespace basicimg {
 
 			for (i32 row = 1; row <= preInfo.m_activate_rect.m_height; ++row) {
 				for (i32 col = 1; col <= preInfo.m_activate_rect.m_width; ++col) {
-					basiclog_assert2(image_data == preInfo.m_temp_image.ptr<image_pixel_type>(row, col));
+					basiclog_assert2(image_data == preInfo.m_temp_image.template ptr<image_pixel_type>(row, col));
 
 					if (0 == image_data->m_visit_flag) {
 						startPoint.m_x = col - 1 + preInfo.m_activate_rect.m_left;
@@ -250,9 +250,9 @@ namespace basicimg {
 		virtual void single_extract(img_connected_component& cc, const mt_point& startPoint, mt_mat& image, const img_mask_info<T>& maskInfo = img_mask_info<T>(), img_Connected_Type connect_type = img_Connected_Type_8_Neibour) {
 			normal_connected_info preInfo;
 			normal_extract_start(preInfo, image, maskInfo, connect_type, 1);
-			image_pixel_type* start_image_data = preInfo.m_temp_image.ptr<image_pixel_type>(1, 1);
+			image_pixel_type* start_image_data = preInfo.m_temp_image.template ptr<image_pixel_type>(1, 1);
 
-			image_pixel_type* image_data = preInfo.m_temp_image.ptr<image_pixel_type>(startPoint.m_y - preInfo.m_activate_rect.m_top + 1, startPoint.m_x - preInfo.m_activate_rect.m_left + 1);
+			image_pixel_type* image_data = preInfo.m_temp_image.template ptr<image_pixel_type>(startPoint.m_y - preInfo.m_activate_rect.m_top + 1, startPoint.m_x - preInfo.m_activate_rect.m_left + 1);
 			image_pixel_type* top_image_data;
 			image_pixel_type* other_image_data;
 			b8 connect_condition = false;
@@ -294,6 +294,18 @@ namespace basicimg {
 			currentRegion->m_y = preInfo.m_cache_point_index;
 			single_extract_stop(cc, preInfo);
 			delete preInfo.m_cache_points;
+		}
+
+		virtual void ture_normal_extract(img_multi_connected_components& ccs, const mt_mat& image, const img_mask_info<T>& maskInfo = img_mask_info<T>(), img_Connected_Type connect_type = img_Connected_Type_8_Neibour) {
+			basicimg_cc_n_begin();
+			connect_condition = true;
+			basicimg_cc_n_end();
+		}
+
+		virtual void ture_single_extract(img_connected_component cc, const mt_point& startPoint, const mt_mat& image, const img_mask_info<T>& maskInfo /* = MaskInfo<T>() */, img_Connected_Type connect_type /* = img_Connected_Type_8_Neibour */) {
+			basicimg_cc_s_begin();
+			connect_condition = true;
+			basicimg_cc_s_end();
 		}
 
 	protected:
@@ -448,7 +460,7 @@ namespace basicimg {
 
 					//定位有效矩形区域的第一个像素
 					const T* rawData = src.ptr<T>(rowMin, colMin);
-					maskData = maskInfo.m_mask_image.ptr<u8>(rowMin, colMin);
+					maskData = maskInfo.m_mask_image.template ptr<u8>(rowMin, colMin);
 
 					for (i32 col = 0; col < preInfo.m_temp_image.size()[1]; ++col) {
 						data->m_visit_flag = 1;
@@ -536,7 +548,7 @@ namespace basicimg {
 					data += temp_image_append_offset;
 
 					for (i32 row = 1; row <= preInfo.m_activate_rect.m_height; ++row) {
-						basiclog_assert2(data == preInfo.m_temp_image.ptr<image_pixel_type>(row, 0));
+						basiclog_assert2(data == preInfo.m_temp_image.template ptr<image_pixel_type>(row, 0));
 
 						data->m_visit_flag = 1;
 						++data;
@@ -545,7 +557,7 @@ namespace basicimg {
 						for (; col <= preInfo.m_activate_rect.m_width; ++col) {
 
 							basiclog_assert2(rawData == src.ptr<T>(row - 1 + rowMin, col - 1 + colMin));
-							basiclog_assert2(data == preInfo.m_temp_image.ptr<image_pixel_type>(row, col));
+							basiclog_assert2(data == preInfo.m_temp_image.template ptr<image_pixel_type>(row, col));
 
 							if (*rawData != maskInfo.m_mask_value) {
 								data->m_visit_flag = 0;
@@ -627,25 +639,6 @@ namespace basicimg {
 			}
 		}
 	};
-
-	template<class T>
-	class ml_connected_component_true_condition_imp : public ml_connected_component_base<T> {
-	public:
-
-		virtual void normal_extract(img_multi_connected_components& ccs, const mt_mat& image, const img_mask_info<T>& maskInfo = img_mask_info<T>(), img_Connected_Type connect_type = img_Connected_Type_8_Neibour) {
-			basicimg_cc_n_begin();
-			connect_condition = true;
-			basicimg_cc_n_end();
-		}
-
-		virtual void single_extract(img_connected_component cc, const mt_point& startPoint, const mt_mat& image, const img_mask_info<T>& maskInfo /* = MaskInfo<T>() */, img_Connected_Type connect_type /* = img_Connected_Type_8_Neibour */) {
-			basicimg_cc_s_begin();
-			connect_condition = true;
-			basicimg_cc_s_end();
-		}
-	};
-
-
 
 	class img_connected_component_helper {
 	public:

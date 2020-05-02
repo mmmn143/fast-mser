@@ -8,7 +8,7 @@ img_original_mser::~img_original_mser() {
 //void img_original_mser::inner_extract(img_multi_msers& res, const mt_mat& gray_src, const img_mask_info<u8>& mask) {
 //	res = img_multi_msers();
 //	
-//	sys_timer timer(L"ml_original_mser::extract");
+//	sys_timer timer("ml_original_mser::extract");
 //	timer.begin();
 //
 //	preProcessImage(gray_src, mask);
@@ -40,7 +40,7 @@ void img_original_mser::recognize_mser() {
 	i32 nmsCount = 0;
 	i32 duplicatedCount = 0;
 
-	sys_timer timer1(L"StableTimer");
+	sys_timer timer1("StableTimer");
 	timer1.begin();
 
 	for (i32 i = 0; i < (i32)m_regions.size(); ++i) {
@@ -52,7 +52,7 @@ void img_original_mser::recognize_mser() {
 			continue;
 		}
 
-		//首先计算全部Region的真实Parent
+		// Find real parent regions for all regions
 		mser_region* parentRegion = m_regions[i].mParent;	
 
 		while (NULL != parentRegion && parentRegion->m_merged) {
@@ -125,13 +125,13 @@ void img_original_mser::recognize_mser() {
 
 	timer1.end();
 
-	sys_timer timer2(L"DuplicatedTimer");
+	sys_timer timer2("DuplicatedTimer");
 	timer2.begin();
 
 	vector<mser_region*> memoryHelper;
 	memoryHelper.reserve(100);
 
-	//去重
+	// Remove duplicated regions
 	for (i32 i = 0; i < (i32)m_regions.size(); ++i) {
 		if (Flag_Unknow != m_regions[i].mFlags) {
 			continue;
@@ -180,7 +180,7 @@ void img_original_mser::recognize_mser() {
 	//basiclog_assert2(validER == (i32)regions.size() - invalidCount);
 
 	timer2.end();
-	basiclog_info2(sys_strcombine()<<L"er number "<<erCount << L" valid mser number " << validER << L" nms number " << nmsCount << L" duplicated number "<<duplicatedCount);
+	basiclog_info2(sys_strcombine()<<"er number "<<erCount << " valid mser number " << validER << " nms number " << nmsCount << " duplicated number "<<duplicatedCount);
 	m_invalid_er_number = invalidCount;
 }
 
@@ -261,7 +261,6 @@ void img_original_mser::getDuplicatedRegions(vector<mser_region*>& duplicatedReg
 		}
 
 		if (parentRegion->mSize > m_max_point) {
-			//如果父亲节点较大,无须在寻找重复的父亲,因为父亲注定会被删掉
 			break;
 		}
 
@@ -432,9 +431,14 @@ void img_original_mser::clear_memory_cache() {
 
 	mTempImage = mt_mat();
 
-	m_regions.swap(vector<mser_region>());
-	m_link_pts.swap(vector<linked_point>());
-	m_pts.swap(vector<mt_point>());
+	vector<mser_region> temp;
+	m_regions.swap(temp);
+
+	vector<linked_point> temp2;
+	m_link_pts.swap(temp2);
+
+	vector<mt_point> temp3;
+	m_pts.swap(temp3);
 }
 
 void img_original_mser::allocate_memory(const mt_mat& image, const img_mask_info<u8>& mask) {
@@ -462,7 +466,6 @@ void img_original_mser::allocate_memory(const mt_mat& image, const img_mask_info
 
 		i16* tempImageData = mTempImage.ptr<i16>(1, 1);
 
-		//定位有效矩形区域的第一个像素
 		const uchar* imageData = image.ptr<uchar>(activate_rect.m_top, activate_rect.m_left);
 
 		for (i32 row = 1; row <= activate_rect.m_height; ++row) {
@@ -513,7 +516,6 @@ void img_original_mser::allocate_memory(const mt_mat& image, const img_mask_info
 
 			i16* tempImageData = mTempImage.ptr<i16>(1, 1);
 
-			//定位有效矩形区域的第一个像素
 			const uchar* imageData = image.ptr<uchar>(rowMin, colMin);
 			maskData = mask.m_mask_image.ptr<uchar>(rowMin, colMin);
 
@@ -566,7 +568,6 @@ void img_original_mser::allocate_memory(const mt_mat& image, const img_mask_info
 
 			i16* tempImageData = mTempImage.ptr<i16>(1, 1);
 
-			//定位有效矩形区域的第一个像素
 			imageData = image.ptr<uchar>(rowMin, colMin);
 
 			for (i32 row = 1; row <= targetImageSize.m_height; ++row) {
@@ -606,7 +607,6 @@ void img_original_mser::allocate_memory(const mt_mat& image, const img_mask_info
 
 	m_regions.reserve(area);
 
-	//必须与maskImage同尺寸
 	m_link_pts.resize(mTempImage.size()[0] * mTempImage.size()[1]);
 
 	i32 row = 0;
@@ -652,8 +652,7 @@ void img_original_mser::allocate_memory(const mt_mat& image, const img_mask_info
 	colorStartIndexs.resize(colorPixelCounts.size() + 1);
 	mt_helper::integral_array(colorStartIndexs, colorPixelCounts);	
 
-	i32 memory_cost = sizeof(u16) * mTempImage.size()[0] * mTempImage.size()[1] + sizeof(linked_point) * area + sizeof(mser_region) * area + sizeof(mt_point) * area + sizeof(i16*) * area;
-	basiclog_info2(sys_strcombine()<<L"origin memory cost "<< memory_cost / 1024.0 / 1024.0 <<L"MB");
+	m_channel_total_running_memory += sizeof(u16) * mTempImage.size()[0] * mTempImage.size()[1] + sizeof(linked_point) * area + sizeof(mser_region) * area + sizeof(mt_point) * area + sizeof(i16*) * area;
 
 	vector<i32>& tempColorStartIndexs = colorPixelCounts;
 	tempColorStartIndexs = colorStartIndexs;

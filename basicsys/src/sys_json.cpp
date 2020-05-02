@@ -17,12 +17,12 @@
 	 m_prev_seq_element = sys_false;
  }
 
-sys_json_writer& sys_json_writer::operator<<(const wchar_t* str) {
-	wstring text(str);
+sys_json_writer& sys_json_writer::operator<<(const i8* str) {
+	string text(str);
 	return (*this)<<text;
 }
 
-sys_json_writer& sys_json_writer::operator<<(const wstring& str) {
+sys_json_writer& sys_json_writer::operator<<(const string& str) {
 	if (m_writer->is_string_buffer()) {
 		text_write_str(str);
 	} else {
@@ -76,24 +76,6 @@ sys_json_writer& sys_json_writer::operator<<(const i8& val) {
 	} else {
 		m_writer->write(sys_Node_Type_Int);
 		m_writer->write((i32)sizeof(i8));
-		m_writer->write(val);
-
-		if (m_envs.back() == sys_Node_Type_Map) {
-			m_json_expected = sys_Json_Expected_Name;
-		}
-	}
-
-	return *this;
-}
-
-sys_json_writer& sys_json_writer::operator<<(const c16& val) {
-	basiclog_assert2(m_json_expected == sys_Json_Expected_Value);
-
-	if (m_writer->is_string_buffer()) {
-		text_write_str(sys_strcombine()<<val);
-	} else {
-		m_writer->write(sys_Node_Type_Int);
-		m_writer->write((i32)sizeof(c16));
 		m_writer->write(val);
 
 		if (m_envs.back() == sys_Node_Type_Map) {
@@ -248,43 +230,43 @@ sys_json_writer& sys_json_writer::operator<<(const f64& val) {
 	return *this;
 }
 
-void sys_json_writer::text_write_str(const wstring& str) {
-	if (str == L"{") {
+void sys_json_writer::text_write_str(const string& str) {
+	if (str == "{") {
 		if (m_envs.back() == sys_Json_Envrionment_Seq) {
 			m_writer->write(m_tabs);
 		}
 
-		m_writer->write(str + L"\n");
+		m_writer->write(str + "\n");
 		
 		m_envs.push_back(sys_Json_Envrionment_Map);
-		m_tabs += L"\t";
+		m_tabs += "\t";
 		m_json_expected = sys_Json_Expected_Name;
 
 		m_prev_seq_element = sys_false;
 		m_prev_seq_begin = sys_false;
 
-	} else if (str == L"[") {
+	} else if (str == "[") {
 		if (m_envs.back() == sys_Json_Envrionment_Seq) {
 			m_writer->write(m_tabs);
 		}
 
-		m_writer->write(str + L"\n");
+		m_writer->write(str + "\n");
 		
 		m_envs.push_back(sys_Json_Envrionment_Seq);
-		m_tabs += L"\t";		
+		m_tabs += "\t";		
 		m_json_expected = sys_Json_Expected_Value;
 		m_prev_seq_element = sys_false;
 		m_prev_seq_begin = sys_true;
 
-	} else if (str == L"}" || str == L"]") {
+	} else if (str == "}" || str == "]") {
 		m_tabs.erase(m_tabs.begin());
 		m_envs.pop_back();
 
 		if (m_prev_seq_element) {
-			m_writer->write(L"\n");
+			m_writer->write("\n");
 		}
 
-		m_writer->write(m_tabs + str + L"\n");
+		m_writer->write(m_tabs + str + "\n");
 
 		if (m_envs.back() == sys_Json_Envrionment_Map) {
 			m_json_expected = sys_Json_Expected_Name;
@@ -298,7 +280,7 @@ void sys_json_writer::text_write_str(const wstring& str) {
 		check_str(str);
 
 		if (m_json_expected == sys_Json_Expected_Name) {
-			m_writer->write(m_tabs + str + L":");
+			m_writer->write(m_tabs + str + ":");
 			m_json_expected = sys_Json_Expected_Value;
 			m_prev_seq_element = sys_false;
 			m_prev_seq_begin = sys_false;
@@ -308,10 +290,10 @@ void sys_json_writer::text_write_str(const wstring& str) {
 					m_writer->write(m_tabs.substr(0, (i32)m_tabs.size() - 1));
 				}
 
-				m_writer->write(L"\t" + str);
+				m_writer->write("\t" + str);
 				m_prev_seq_element = sys_true;
 			} else {
-				m_writer->write(str + L"\n");
+				m_writer->write(str + "\n");
 				m_json_expected = sys_Json_Expected_Name;
 				m_prev_seq_element = sys_false;
 			}
@@ -332,7 +314,7 @@ void sys_json_writer::pre_process_map_seq(u8 type) {
 	//fwrite(&type, sizeof(int), 1, m_file);
 	m_writer->write(type);
 
-	//__int64 data_size_position;
+	//i64 data_size_position;
 	//fgetpos(m_file, &data_size_position);
 	m_data_size_positions.push_back(m_writer->position());
 
@@ -347,7 +329,7 @@ void sys_json_writer::post_process_map_seq() {
 	m_writer->seek(m_data_size_positions.back(), sys_File_Seek_Set);
 	//fseek(m_file, (long)m_data_size_positions.back(), SEEK_SET);
 
-	__int64 data_size = data_size_position - m_data_size_positions.back() - sizeof(i32);
+	i64 data_size = data_size_position - m_data_size_positions.back() - sizeof(i32);
 	//fwrite(&data_size, sizeof(int), 1, m_file);
 	//fseek(m_file, (long)data_size_position, SEEK_SET);
 
@@ -363,19 +345,19 @@ void sys_json_writer::post_process_map_seq() {
 	}
 }
 
-b8 sys_json_writer::check_str(const wstring& str) {
-	c16 invalid_charcaters[] = {L'\n', L'\t', L'{', L'}', L'[', L']'};
+b8 sys_json_writer::check_str(const string& str) {
+	i8 invalid_charcaters[] = {'\n', '\t', '{', '}', '[', ']'};
 
-	for (int i = 0; i < sizeof(invalid_charcaters) / sizeof(c16); ++i) {
+	for (int i = 0; i < sizeof(invalid_charcaters) / sizeof(i8); ++i) {
 		if (int(str.find(invalid_charcaters[i])) != -1) {
-			wstring str;
+			string str;
 
-			if (invalid_charcaters[i] == L'\n') {
-				str = L"str must not include \\n";
+			if (invalid_charcaters[i] == '\n') {
+				str = "str must not include \\n";
 			} else if (invalid_charcaters[i] == L'\t') {
-				str = L"str must not include \\t";
+				str = "str must not include \\t";
 			} else {
-				str = sys_strcombine()<<L"str must not include "<<invalid_charcaters[i];
+				str = sys_strcombine()<<"str must not include "<<invalid_charcaters[i];
 			}
 
 			basiclog_error2(str);
@@ -386,25 +368,25 @@ b8 sys_json_writer::check_str(const wstring& str) {
 	return sys_true;
 }
 
-void sys_json_writer::binary_write_str(const wstring& str) {
-	if (str == L"{") {
+void sys_json_writer::binary_write_str(const string& str) {
+	if (str == "{") {
 		m_envs.push_back(sys_Json_Envrionment_Map);
 		m_json_expected = sys_Json_Expected_Name;
 		pre_process_map_seq(sys_Node_Type_Map);
 
-	} else if (str == L"[") {
+	} else if (str == "[") {
 		m_envs.push_back(sys_Json_Envrionment_Seq);
 
 		//The node in Seq has no name
 		m_json_expected = sys_Json_Expected_Value;
 		pre_process_map_seq(sys_Node_Type_Seq);
 
-	} else if (str == L"}" || str == L"]") {
-		if (str == L"}" && m_envs.back() != sys_Json_Envrionment_Map) {
+	} else if (str == "}" || str == "]") {
+		if (str == "}" && m_envs.back() != sys_Json_Envrionment_Map) {
 			basiclog_assert2(false);
 		}
 
-		if (str == L"]" && m_envs.back() != sys_Json_Envrionment_Seq) {
+		if (str == "]" && m_envs.back() != sys_Json_Envrionment_Seq) {
 			basiclog_assert2(false);
 		}
 
@@ -416,14 +398,14 @@ void sys_json_writer::binary_write_str(const wstring& str) {
 		if (m_json_expected == sys_Json_Expected_Name) {
 			basiclog_assert2(!str.empty());
 
-			m_writer->write((i32)(str.size() * sizeof(c16)));
+			m_writer->write((i32)(str.size() * sizeof(i8)));
 			m_writer->write(str);
 
 			m_json_expected = sys_Json_Expected_Value;
 
 		} else if (m_json_expected = sys_Json_Expected_Value) {
 			m_writer->write(sys_Node_Type_Text);
-			m_writer->write((i32)(str.size() * sizeof(c16)));
+			m_writer->write((i32)(str.size() * sizeof(i8)));
 			m_writer->write(str);
 
 			if (m_envs.back() == sys_Node_Type_Map) {
@@ -433,7 +415,7 @@ void sys_json_writer::binary_write_str(const wstring& str) {
 	}
 }
 
-sys_json_reader::sys_json_reader(sys_buffer_reader* reader, const wstring& node_name, i64 offset /* = 0 */, i32 size /* = -1 */, u8 node_type /* = sys_Node_Type_Map */) {
+sys_json_reader::sys_json_reader(sys_buffer_reader* reader, const string& node_name, i64 offset /* = 0 */, i32 size /* = -1 */, u8 node_type /* = sys_Node_Type_Map */) {
 	m_reader = reader;
 	m_node_name = node_name;
 	m_offset = offset;
@@ -445,16 +427,16 @@ sys_json_reader::sys_json_reader(sys_buffer_reader* reader, const wstring& node_
 	}
 }
 
-void sys_json_reader::operator>>(wstring& text) const {
+void sys_json_reader::operator>>(string& text) const {
 	(const_cast<sys_json_reader*>(this))->load();
 
 	if (m_node_type == sys_Node_Type_Text) {
 		m_reader->seek(m_offset, sys_File_Seek_Set);
 		m_reader->read_str(text, m_size);
 
-		basiclog_assert2(text[0] != L'\t');
+		basiclog_assert2(text[0] != '\t');
 	} else if (m_node_type == sys_Node_Type_Seq && m_seq_nodes.size() == 1) {
-		vector<wstring> texts;
+		vector<string> texts;
 		(*this)>>texts;
 
 		text = texts[0];
@@ -463,14 +445,14 @@ void sys_json_reader::operator>>(wstring& text) const {
 
 void sys_json_reader::operator>>(b8& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		if (text == L"true") {
+		if (text == "true") {
 			val = sys_true;
-		} else if (text == L"false") {
+		} else if (text == "false") {
 			val = sys_false;
 		} else {
 			basiclog_assert2(sys_false);
@@ -487,12 +469,12 @@ void sys_json_reader::operator>>(b8& val) const {
 
 void sys_json_reader::operator>>(i8& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = (i8)_wtoi(text.c_str());
+		val = (i8)atoi(text.c_str());
 
 	} else {
 		f64 tmp = 0;
@@ -504,12 +486,12 @@ void sys_json_reader::operator>>(i8& val) const {
 
 void sys_json_reader::operator>>(u8& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = (u8)_wtoi(text.c_str());
+		val = (u8)atoi(text.c_str());
 
 	} else {
 		f64 tmp = 0;
@@ -521,12 +503,12 @@ void sys_json_reader::operator>>(u8& val) const {
 
 void sys_json_reader::operator>>(u16& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = (u16)_wtoi(text.c_str());
+		val = (u16)atoi(text.c_str());
 
 	} else {
 		f64 tmp = 0;
@@ -538,12 +520,12 @@ void sys_json_reader::operator>>(u16& val) const {
 
 void sys_json_reader::operator>>(i16& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = (i16)_wtoi(text.c_str());
+		val = (i16)atoi(text.c_str());
 
 	} else {
 		f64 tmp = 0;
@@ -555,12 +537,12 @@ void sys_json_reader::operator>>(i16& val) const {
 
 void sys_json_reader::operator>>(u32& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = (u32)_wtoi(text.c_str());
+		val = (u32)atoi(text.c_str());
 
 	} else {
 		f64 tmp = 0;
@@ -572,12 +554,12 @@ void sys_json_reader::operator>>(u32& val) const {
 
 void sys_json_reader::operator>>(i32& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = _wtoi(text.c_str());
+		val = atoi(text.c_str());
 
 	} else {
 		f64 tmp = 0;
@@ -589,12 +571,12 @@ void sys_json_reader::operator>>(i32& val) const {
 
 void sys_json_reader::operator>>(u64& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = (u64)_wtoi64(text.c_str());
+		val = (u64)_atoi64(text.c_str());
 
 	} else {
 		f64 tmp = 0;
@@ -606,12 +588,12 @@ void sys_json_reader::operator>>(u64& val) const {
 
 void sys_json_reader::operator>>(i64& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = _wtoi64(text.c_str());
+		val = _atoi64(text.c_str());
 
 	} else {
 		f64 tmp = 0;
@@ -630,12 +612,12 @@ void sys_json_reader::operator>>(f32& val) const {
 
 void sys_json_reader::operator>>(f64& val) const {
 	if (m_reader->is_string_buffer()) {
-		wstring text;
+		string text;
 		(*this)>>text;
 
 		basiclog_assert2(!text.empty());
 
-		val = _wtof(text.c_str());
+		val = atof(text.c_str());
 	} else {
 		(const_cast<sys_json_reader*>(this))->load();
 		m_reader->seek(m_offset, sys_File_Seek_Set);
@@ -676,22 +658,22 @@ void sys_json_reader::operator>>(f64& val) const {
 	}
 }
 
-sys_json_reader sys_json_reader::operator[](const wstring& node_name) const {
+sys_json_reader sys_json_reader::operator[](const string& node_name) const {
 	(const_cast<sys_json_reader*>(this))->load();
 
 	basiclog_assert2(m_node_type == sys_Json_Envrionment_Map);
 
-	map<wstring, sys_json_reader>::const_iterator iter = m_map_nodes.find(node_name);
+	map<string, sys_json_reader>::const_iterator iter = m_map_nodes.find(node_name);
 
 	basiclog_assert2(iter != m_map_nodes.end());
 
 	return iter->second;
 }
 
-b8 sys_json_reader::has_key(const wstring& key_name) const {
+b8 sys_json_reader::has_key(const string& key_name) const {
 	(const_cast<sys_json_reader*>(this))->load();
 
-	map<wstring, sys_json_reader>::const_iterator iter = m_map_nodes.find(key_name);
+	map<string, sys_json_reader>::const_iterator iter = m_map_nodes.find(key_name);
 
 	if (iter != m_map_nodes.end()) {
 		return sys_true;
@@ -753,19 +735,19 @@ void sys_json_reader::load() {
 void sys_json_reader::text_load_struct_info() {
 	m_reader->seek(m_offset, sys_File_Seek_Set);
 
-	wstring text;
+	string text;
 	m_reader->read_str(text, m_size);
 
 	if (m_node_type == sys_Json_Envrionment_Seq) {
-		i32 valid_index = (i32)text.find_first_not_of(L'\t');
+		i32 valid_index = (i32)text.find_first_not_of('\t');
 
 		if (valid_index != -1) {
-			c16 first_character = text[valid_index];
-			if (first_character == L'{' || first_character == L'[') {
+			i8 first_character = text[valid_index];
+			if (first_character == '{' || first_character == '[') {
 				i32 last_index = 0;
 
 				while (last_index < (i32)text.size()) {
-					i32 node_data_start_index = (i32)text.find_first_not_of(L'\t', last_index);
+					i32 node_data_start_index = (i32)text.find_first_not_of('\t', last_index);
 
 					if (node_data_start_index == -1) {
 						break;
@@ -779,7 +761,7 @@ void sys_json_reader::text_load_struct_info() {
 
 					//basiclog_info2(text.substr(node_data_start_index, node_data_stop_index - node_data_start_index));
 
-					sys_json_reader node(m_reader, L"", m_offset + node_data_start_index * sizeof(c16), (node_data_stop_index - node_data_start_index) * sizeof(c16), first_character == L'{' ? sys_Node_Type_Map : sys_Node_Type_Seq);
+					sys_json_reader node(m_reader, "", m_offset + node_data_start_index * sizeof(i8), (node_data_stop_index - node_data_start_index) * sizeof(i8), first_character == '{' ? sys_Node_Type_Map : sys_Node_Type_Seq);
 					m_seq_nodes.push_back(node);
 
 					last_index = node_data_stop_index + 2; //need skip } or ], and \n
@@ -788,15 +770,15 @@ void sys_json_reader::text_load_struct_info() {
 				//must be element!
 				int last_index = valid_index;
 				for (i32 i = last_index; i < (i32)text.size(); ++i) {
-					if (text.at(i) == L'\t' || text.at(i) == L'\n') {
+					if (text.at(i) == '\t' || text.at(i) == '\n') {
 						//basiclog_assert2(i > last_index);
 
-						sys_json_reader node(m_reader, L"", m_offset + last_index * sizeof(c16), (i32)(i - last_index) * sizeof(c16), sys_Node_Type_Text); //not include the last '\t'
+						sys_json_reader node(m_reader, "", m_offset + last_index * sizeof(i8), (i32)(i - last_index) * sizeof(i8), sys_Node_Type_Text); //not include the last '\t'
 						m_seq_nodes.push_back(node);
 
 						last_index = i + 1; //need skip \t
 
-						if (text[i] == L'\n') {
+						if (text[i] == '\n') {
 							break;
 						}
 					}
@@ -804,7 +786,7 @@ void sys_json_reader::text_load_struct_info() {
 			}
 		}
 	} else {
-		basiclog_assert2(text[0] != L'{' && text[0] != L'[' && text[0] != L'\n');
+		basiclog_assert2(text[0] != '{' && text[0] != '[' && text[0] != '\n');
 
 		int last_index = 0;
 		u8 node_type;
@@ -816,24 +798,24 @@ void sys_json_reader::text_load_struct_info() {
 				break;
 			}
 
-			wstring node_name = text.substr(last_index, node_name_end_index - last_index);
-			sys_strhelper::trim_left(node_name, L'\t');
+			string node_name = text.substr(last_index, node_name_end_index - last_index);
+			sys_strhelper::trim_left(node_name, '\t');
 
 			int node_data_start_index = node_name_end_index + 1;
 			int node_data_stop_index;
 
-			c16 first_node_data_character = text[node_data_start_index];
+			i8 first_node_data_character = text[node_data_start_index];
 
-			if (first_node_data_character == L'{' || first_node_data_character == L'[') {
+			if (first_node_data_character == '{' || first_node_data_character == '[') {
 				node_data_start_index += 2;
 				node_data_stop_index = find_match_character(text, first_node_data_character, node_data_start_index); //context between {\n } or [\n ]
-				node_type = first_node_data_character == L'{' ? sys_Node_Type_Map : sys_Node_Type_Seq;
+				node_type = first_node_data_character == '{' ? sys_Node_Type_Map : sys_Node_Type_Seq;
 				last_index = node_data_stop_index + 2; //need skip } or ], and \n		
 			} else {
-				i32 tmp_data_end_index = (i32)text.find(L'\n', node_data_start_index);
+				i32 tmp_data_end_index = (i32)text.find('\n', node_data_start_index);
 
 				if (tmp_data_end_index == -1) {
-					node_data_stop_index = m_size / sizeof(c16);
+					node_data_stop_index = m_size / sizeof(i8);
 				} else {
 					node_data_stop_index = tmp_data_end_index;
 				}
@@ -843,7 +825,7 @@ void sys_json_reader::text_load_struct_info() {
 				last_index = node_data_stop_index + 1; //need skip \n		
 			}
 
-			sys_json_reader node(m_reader, node_name, m_offset + node_data_start_index * sizeof(c16), (node_data_stop_index - node_data_start_index) * sizeof(c16), node_type);
+			sys_json_reader node(m_reader, node_name, m_offset + node_data_start_index * sizeof(i8), (node_data_stop_index - node_data_start_index) * sizeof(i8), node_type);
 			m_map_nodes.insert(make_pair(node_name, node));
 		}
 	}
@@ -870,7 +852,7 @@ void sys_json_reader::binary_load_struct_info() {
 			//	basiclog_assert2(node_data_size > 0);
 			//}
 			
-			sys_json_reader node(reader, L"", reader->position(), node_data_size, node_type);
+			sys_json_reader node(reader, "", reader->position(), node_data_size, node_type);
 			m_seq_nodes.push_back(node);
 
 			reader->seek(node_data_size, sys_File_Seek_Cur);
@@ -882,7 +864,7 @@ void sys_json_reader::binary_load_struct_info() {
 
 			//basiclog_info2(reader->position());
 
-			wstring node_name = reader->read_str(node_name_size);
+			string node_name = reader->read_str(node_name_size);
 
 			u8 node_type = reader->read_u8();
 
@@ -902,9 +884,9 @@ void sys_json_reader::binary_load_struct_info() {
 	}
 }
 
-i32 sys_json_reader::find_match_character(const wstring& text, c16 need_matched_char, i32 start_index) {
+i32 sys_json_reader::find_match_character(const string& text, i8 need_matched_char, i32 start_index) {
 	i32 count = 1;
-	c16 other_char = need_matched_char == L'{' ? L'}' : L']';
+	i8 other_char = need_matched_char == '{' ? '}' : ']';
 
 	for (i32 i = start_index; i < (i32)text.size(); ++i) {
 		if (text[i] == need_matched_char) {

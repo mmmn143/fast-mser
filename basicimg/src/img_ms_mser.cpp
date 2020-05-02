@@ -46,7 +46,8 @@ void img_ms_mser::clear_memory_cache() {
 	m_gray_order_regions_memory_size = 0;
 	m_exceed_times = 0;
 
-	m_remove_duplicated_memory_helper.swap(vector<mser_region*>());
+	vector<mser_region*> temp;
+	m_remove_duplicated_memory_helper.swap(temp);
 }
 
 void img_ms_mser::allocate_memory(const mt_mat& img, const img_mask_info<u8>& mask) {
@@ -116,9 +117,8 @@ void img_ms_mser::allocate_memory(const mt_mat& img, const img_mask_info<u8>& ma
 		temp_mser_region* m_parent;
 	};
 
-	i32 algorithm_memory_size = pt_size * sizeof(u32) + pt_size * sizeof(u8) + rg_size * sizeof(temp_mser_region) + h_size * sizeof(u32*)
+	m_channel_total_running_memory += pt_size * sizeof(u32) + pt_size * sizeof(u8) + rg_size * sizeof(temp_mser_region) + h_size * sizeof(u32*)
 		+ sizeof(u32) * 257 * 3;
-	basiclog_info2(sys_strcombine()<<L"linear memory cost: "<< algorithm_memory_size / 1024.0 / 1024.0 <<L"MB");
 
 	i32 row_step = img.size()[1] + 2;
 
@@ -358,7 +358,7 @@ void img_ms_mser::build_tree(const mt_mat& img, const img_mask_info<u8>& mask, u
 	m_er_number = (i32)(regions - startRegion);
 	m_mser_regions_end = regions;
 
-	basiclog_info2(sys_strcombine()<<L"er number "<<erCount << L" region number " << (regions - startRegion) << L" mser number " << mser_number);
+	basiclog_info2(sys_strcombine()<<"er number "<<erCount << " region number " << (i64)(regions - startRegion) << " mser number " << mser_number);
 }
 
 void img_ms_mser::init_comp(connected_comp* comptr, mser_region*& region) {
@@ -456,8 +456,8 @@ void img_ms_mser::recognize_mser_normal() {
 
 	nmsCount = beforeUnkonwSize - totalUnkonwSize;
 
-	basiclog_info2(sys_strcombine()<<L"bad_variance_number "<<bad_variance_number);
-	basiclog_info2(sys_strcombine()<<L"nms count "<<nmsCount);
+	basiclog_info2(sys_strcombine()<<"bad_variance_number "<<bad_variance_number);
+	basiclog_info2(sys_strcombine()<<"nms count "<<nmsCount);
 
 	remove_duplicated();	
 }
@@ -502,7 +502,7 @@ void img_ms_mser::remove_duplicated() {
 
 		m_remove_duplicated_memory_helper.reserve(100);
 
-		//去重
+		// Remove duplicated regions
 		for (u32 i = 0; i < m_gray_order_region_size; ++i) {
 			mser_region* currentRegion = m_gray_order_regions[i];
 
@@ -612,10 +612,35 @@ void img_ms_mser::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
 			}
 
 			cur_region->m_mser_index = i;
+			cur_region->m_child_pixel_size = 0;
 
 			cur_mser.m_rect.m_left = -1;
 
 			mser_heap[cur_region - m_mser_regions] = &cur_mser;
+		}
+
+		// compute child pixel size
+		for (u32 i = 0; i < m_gray_order_region_size; ++i) {
+			mser_region* cur_region = m_gray_order_regions[i];
+			img_mser& cur_mser = t_msers[i];
+
+			for (real_region = cur_region->m_parent; real_region != NULL && real_region->m_region_flag != mser_region::Flag_Valid; real_region = real_region->m_parent) {
+			}
+
+			parent_region = cur_region->m_parent;
+
+			if (real_region != NULL) {
+				real_region->m_child_pixel_size += cur_mser.m_size;
+			}
+
+			cur_region->m_parent = real_region;
+
+			while (parent_region != NULL && parent_region != real_region) {
+				cur_region = parent_region->m_parent;
+
+				parent_region->m_parent = real_region;
+				parent_region = cur_region;
+			}
 		}
 
 		int number = 0;
@@ -818,14 +843,14 @@ void img_ms_mser::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
 			parent_mser->m_rect.adjust_by_append_rect(cur_mser.m_rect);
 		}
 
-		if (cur_mser.m_memory_type == img_mser::Memory_Type_Share) {
+		if (cur_mser.m_memory_type == img_mser::Memory_Type_Share || cur_mser.m_memory_type == img_mser::Memory_Type_Self) {
 			cur_mser.m_points -= cur_mser.m_size;
 		}
 
 		if (parent_mser != NULL) {
-			if (cur_mser.m_memory_type == img_mser::Memory_Type_Share) {
+			if (cur_mser.m_memory_type == img_mser::Memory_Type_Share || cur_mser.m_memory_type == img_mser::Memory_Type_Self) {
 
-				if (parent_mser->m_memory_type == img_mser::Memory_Type_Share) {
+				if (parent_mser->m_memory_type == img_mser::Memory_Type_Share || cur_mser.m_memory_type == img_mser::Memory_Type_Self) {
 					memcpy(parent_mser->m_points, cur_mser.m_points, sizeof(mt_point) * cur_mser.m_size);
 					parent_mser->m_points += cur_mser.m_size;
 					memcpy_number += 1;
@@ -854,7 +879,7 @@ void img_ms_mser::get_duplicated_regions(vector<mser_region*>& duplicatedRegions
 		}
 
 		if (parentRegion->m_size > m_max_point) {
-			//如果父亲节点较大,无须在寻找重复的父亲,因为父亲注定会被删掉
+			// If the size of parent is too large, we do not need to find duplicated parent regions (parent regions will be delete absolutely). 
 			break;
 		}
 
@@ -865,7 +890,7 @@ void img_ms_mser::get_duplicated_regions(vector<mser_region*>& duplicatedRegions
 		}
 
 		if (mser_region::Flag_Valid == parentRegion->m_region_flag) {
-			basiclog_warning2(L"Too big mDuplicateVariantion");
+			basiclog_warning2("Too big mDuplicateVariantion");
 
 			parentRegion = parentRegion->m_parent;
 			continue;

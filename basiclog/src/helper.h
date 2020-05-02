@@ -2,7 +2,7 @@
 
 namespace basiclog {
 
-	void error_message_box(const wstring& msg, const wstring& path, int line);
+	void error_message_box(const string& msg, const string& path, int line);
 
-	void ide_console_print(const wstring& log_info);
+	void ide_console_print(const string& log_info);
 }

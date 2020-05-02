@@ -135,7 +135,7 @@ namespace basicmath {
 
 		template<class T>
 		static void unpooling(mt_mat& src, const mt_mat& mask_mat, const mt_mat& pooling_res_mat, mt_Pooling_Type pooling_type, i32 size, const int* kernel_sizes, const int* strides) {
-			sys_timer timer(L"unpooling", sys_false);
+			sys_timer timer("unpooling", sys_false);
 			timer.begin();
 
 			basiclog_assert2(pooling_res_mat.dim() == size);
@@ -1477,6 +1477,15 @@ namespace basicmath {
 
 }
 
+mt_mat mt_mat::pooling(mt_Pooling_Type pooling_type, i32 size, const basicsys::i32* kernel_sizes, const basicsys::i32* strides) const {
+	mt_mat mask_mat;
+	return pooling(mask_mat, pooling_type, size, kernel_sizes, strides);
+}
+
+mt_mat mt_mat::pooling(mt_Pooling_Type pooling_type, const vector<basicsys::i32>& kernel_sizes, const vector<basicsys::i32>& strides) const {
+	mt_mat mask_mat;
+	return pooling(mask_mat, pooling_type, kernel_sizes, strides);
+}
 
 mt_mat mt_mat::pooling(mt_mat& mask_mat, mt_Pooling_Type pooling_type, i32 size, const basicsys::i32* kernel_sizes, const basicsys::i32* strides) const {
 	basicmath_mat_request_memory(i32, res_sizes, dim());
@@ -1527,7 +1536,7 @@ mt_mat mt_mat::pooling(mt_mat& mask_mat, mt_Pooling_Type pooling_type, i32 size,
 		break;
 	}
 
-	if (m_auto_derivative != NULL && m_auto_derivative->math_operation_recorded()) {
+	if (m_auto_derivative != NULL && m_auto_derivative->stage() == mt_auto_derivative::Stage_Record_Computing) {
 		res.attach(m_auto_derivative);
 
 		m_auto_derivative->pooling(res, mask_mat, *this, pooling_type, size, kernel_sizes, strides);

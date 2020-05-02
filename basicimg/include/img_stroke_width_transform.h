@@ -22,7 +22,7 @@ namespace basicimg {
 			b8 m_dark_on_light;
 		};
 
-		static mt_mat swt(__in mt_mat& edge, __in mt_mat& gradient_x, __in mt_mat& gradient_y, const params& pars = params());
+		static mt_mat swt(mt_mat& edge, mt_mat& gradient_x, mt_mat& gradient_y, const params& pars = params());
 
 		static mt_mat normalize_swt_image(mt_mat& swt_image, i16 invalid_stroke_width);
 
@@ -56,10 +56,10 @@ namespace basicimg {
 			mt_point* m_stop;
 		};
 
-		static void set_ray_width(__in mt_mat& swt_image, const swt_ray& ray);
+		static void set_ray_width(mt_mat& swt_image, const swt_ray& ray);
 
 		static void median_stroke_width(mt_mat& swt_image, vector<swt_ray>& rays, const params& pars);
 
-		static i32 get_next_point(__out mt_point* next_pts, __in i32 cur_x, __in i32 cur_y, __in i32 last_x, __in i32 last_y, __in float gradient_x, __in float gradient_y);	
+		static i32 get_next_point(mt_point* next_pts, i32 cur_x, i32 cur_y, i32 last_x, i32 last_y, float gradient_x, float gradient_y);	
 	};
 }

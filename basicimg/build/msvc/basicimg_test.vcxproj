@@ -19,15 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\test\img_auto_threshold_canny_test.cpp" />
-    <ClCompile Include="..\..\src\test\img_canny_test.cpp" />
-    <ClCompile Include="..\..\src\test\img_img_test.cpp" />
-    <ClCompile Include="..\..\src\test\img_mser_test.cpp" />
-    <ClCompile Include="..\..\src\test\img_stroke_width_transform_test.cpp" />
-    <ClCompile Include="..\..\src\test\test.cpp" />
+    <ClCompile Include="..\..\test\img_auto_threshold_canny_test.cpp" />
+    <ClCompile Include="..\..\test\img_canny_test.cpp" />
+    <ClCompile Include="..\..\test\img_img_test.cpp" />
+    <ClCompile Include="..\..\test\img_mser_test.cpp" />
+    <ClCompile Include="..\..\test\img_stroke_width_transform_test.cpp" />
+    <ClCompile Include="..\..\test\test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\test\test.h" />
+    <ClInclude Include="..\..\test\test.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9349BAE8-40F4-49CE-B069-16553A1691A5}</ProjectGuid>
@@ -145,7 +145,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>

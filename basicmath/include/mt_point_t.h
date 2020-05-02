@@ -25,6 +25,10 @@ namespace basicmath {
 			return mt_point_t(m_x - other.m_x, m_y - other.m_y);
 		}
 
+		bool operator==(const mt_point_t& other) const {
+			return m_x == other.m_x && m_y == other.m_y;
+		}
+
 		f64 distance_to(const mt_point_t& other) {
 			T square = (other.m_x - m_x) * (other.m_x - m_x) + (other.m_y - m_y) * (other.m_y - m_y);
 			return sqrt((f64)square);
@@ -40,6 +44,6 @@ namespace basicmath {
 
 	template<class T>
 	void write(basicsys::sys_strcombine& str, const mt_point_t<T>& data) {
-		str<<L"["<<data.m_x<<L","<<data.m_y<<L"]";
+		str<<"["<<data.m_x<<","<<data.m_y<<"]";
 	}
 }

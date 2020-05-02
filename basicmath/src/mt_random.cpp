@@ -8,7 +8,7 @@ void mt_random::set_seed(u32 seed) {
 }
 
 i32 mt_random::random_next_i32(i32 min, i32 max) {
-	f64 value = rand() / (f64)(RAND_MAX + 1);	//[0,1)，必须是开区间
+	f64 value = rand() / (f64)(RAND_MAX + 1);	//[0,1)
 	return (i32)(value * (max - min + 1)) + min;
 }
 
@@ -92,7 +92,7 @@ i32 mt_random::bernoulli(i32 n, f64 p) {
 	probabilitys.resize(n + 1);
 
 	for (i32 k = 0; k <= n; ++k) {
-		probabilitys[k] = mt_helper::combination(n, k) * std::pow(p, k) * std::pow(1 - p, n - k);
+		probabilitys[k] = mt_helper::combination(n, k) * pow(p, k) * pow(1 - p, n - k);
 	}
 
 	for (i32 k = 1; k < n; ++k) {
@@ -126,7 +126,7 @@ mt_mat mt_random::bernoulli_iid(i32 dims, const i32* sizes, mt_Depth_Channel dep
 	probabilitys.resize(n + 1);
 
 	for (i32 k = 0; k <= n; ++k) {
-		probabilitys[k] = mt_helper::combination(n, k) * std::pow(p, k) * std::pow(1 - p, n - k);
+		probabilitys[k] = mt_helper::combination(n, k) * pow(p, k) * pow(1 - p, n - k);
 	}
 
 	for (i32 k = 1; k < n; ++k) {

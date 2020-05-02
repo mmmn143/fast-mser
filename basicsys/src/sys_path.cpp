@@ -2,15 +2,42 @@
 #include "sys_path.h"
 #include "sys_strhelper.h"
 
+#ifdef _WIN32
+#include <io.h>
 #include <windows.h>
+#else
+#include <dirent.h>
+#include <unisted.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <mach-o/dyld.h>
+#endif
 
-void sys_path::get_file_path(vector<wstring>& filePaths, const wstring& dirPath, const wstring& expandName) {
+
+string sys_path::get_match_resource_dir() {
+	string module_path = sys_path::get_module_path();
+
+#ifdef _WIN32
+	string::size_type index = module_path.find("MATEL\\");
+#else
+	string::size_type index = module_path.find("MATEL/");
+#endif
+	basiclog_assert2(index != string::npos);
+
+	string basicimg_root_dir_path = module_path.substr(0, index);
+
+	return basicimg_root_dir_path + "matel_resource/";
+}
+
+void sys_path::get_file_path(vector<string>& filePaths, const string& dirPath, const string& expandName) {
 	filePaths.clear();
 
-	wstring temp = dirPath + TEXT("*") + expandName;
+#ifdef _WIN32
+	string temp = dirPath + "*" + expandName;
 
-	WIN32_FIND_DATA  fileAttr;
-	HANDLE  handle = FindFirstFile(temp.c_str(), &fileAttr);
+	WIN32_FIND_DATAA  fileAttr;
+	HANDLE  handle = FindFirstFileA(temp.c_str(), &fileAttr);
 
 	if(INVALID_HANDLE_VALUE != handle) {
 		do 
@@ -19,23 +46,23 @@ void sys_path::get_file_path(vector<wstring>& filePaths, const wstring& dirPath,
 				continue;
 			}
 
-			wstring fileName = fileAttr.cFileName;
+			string fileName = fileAttr.cFileName;
 
-			if (wstring(TEXT(".")) == fileName || wstring(TEXT("..")) == fileName) {
+			if (string((".")) == fileName || string(("..")) == fileName) {
 				continue;
 			}
 
 			filePaths.push_back(dirPath + fileName);
 		} while (false);
 
-		while (FindNextFile(handle, &fileAttr)) {
+		while (FindNextFileA(handle, &fileAttr)) {
 			if (fileAttr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 				continue;
 			}
 
-			wstring fileName = fileAttr.cFileName;
+			string fileName = fileAttr.cFileName;
 
-			if (wstring(TEXT(".")) == fileName || wstring(TEXT("..")) == fileName) {
+			if (string(".") == fileName || string(("..")) == fileName) {
 				continue;
 			}
 
@@ -44,15 +71,45 @@ void sys_path::get_file_path(vector<wstring>& filePaths, const wstring& dirPath,
 
 		FindClose(handle);
 	}
+#else
+	DIR* dir = opendir(dirPath.c_str());
+
+	if (dir == NULL) {
+		return;
+	}
+
+	dirent* entry;
+
+	while ((entry = readdir(dir)) != NULL) {
+		if (entry->d_type == DT_DIR) {
+			continue;
+		}
+
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+			continue;
+		}
+
+		string s_name(entry->d_name);
+
+		if (!expandName.empty() && (i32)s_name.find(expandName) != (i32)s_name.size() - (i32)expandName.size()) {
+			continue;
+		}
+
+		fileNames.push_back(dirPath + entry->d_name);
+	}
+
+	closedir(dir);
+#endif
 }
 
-void sys_path::get_file_name(vector<wstring>& fileNames, const wstring& dirPath, const wstring& expandName) {		
+void sys_path::get_file_name(vector<string>& fileNames, const string& dirPath, const string& expandName) {	
 	fileNames.clear();
 
-	wstring temp = dirPath + TEXT("*") + expandName;
+#ifdef _WIN32
+	string temp = dirPath + "*" + expandName;
 
-	WIN32_FIND_DATA  fileAttr;
-	HANDLE  handle = FindFirstFile(temp.c_str(), &fileAttr);
+	WIN32_FIND_DATAA  fileAttr;
+	HANDLE  handle = FindFirstFileA(temp.c_str(), &fileAttr);
 
 	if(INVALID_HANDLE_VALUE != handle) {
 		do 
@@ -61,23 +118,23 @@ void sys_path::get_file_name(vector<wstring>& fileNames, const wstring& dirPath,
 				continue;
 			}
 
-			wstring fileName = fileAttr.cFileName;
+			string fileName = fileAttr.cFileName;
 
-			if (wstring(TEXT(".")) == fileName || wstring(TEXT("..")) == fileName) {
+			if (string((".")) == fileName || string(("..")) == fileName) {
 				continue;
 			}
 
 			fileNames.push_back(fileName);
 		} while (false);
 
-		while (FindNextFile(handle, &fileAttr)) {
+		while (FindNextFileA(handle, &fileAttr)) {
 			if (fileAttr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 				continue;
 			}
 
-			wstring fileName = fileAttr.cFileName;
+			string fileName = fileAttr.cFileName;
 
-			if (wstring(TEXT(".")) == fileName || wstring(TEXT("..")) == fileName) {
+			if (string((".")) == fileName || string(("..")) == fileName) {
 				continue;
 			}
 
@@ -86,15 +143,44 @@ void sys_path::get_file_name(vector<wstring>& fileNames, const wstring& dirPath,
 
 		FindClose(handle);
 	}
+#else
+	DIR* dir = opendir(dirPath.c_str());
+
+	if (dir == NULL) {
+		return;
+	}
+
+	dirent* entry;
+
+	while ((entry = readdir(dir)) != NULL) {
+		if (entry->d_type == DT_DIR) {
+			continue;
+		}
+
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+			continue;
+		}
+
+		string s_name(entry->d_name);
+
+		if (!expandName.empty() && (i32)s_name.find(expandName) != (i32)s_name.size() - (i32)expandName.size()) {
+			continue;
+		}
+
+		fileNames.push_back(entry->d_name);
+	}
+
+	closedir(dir);
+#endif
 }
 
-void sys_path::get_dir_path(vector<wstring>& dirPaths, const wstring& dirPath) {
+void sys_path::get_dir_path(vector<string>& dirPaths, const string& dirPath) {
 	dirPaths.clear();
+#ifdef _WIN32
+	string temp = dirPath + ("*");
 
-	wstring temp = dirPath + TEXT("*");
-
-	WIN32_FIND_DATA  fileAttr;
-	HANDLE  handle = FindFirstFile(temp.c_str(), &fileAttr);
+	WIN32_FIND_DATAA  fileAttr;
+	HANDLE  handle = FindFirstFileA(temp.c_str(), &fileAttr);
 
 	if(INVALID_HANDLE_VALUE != handle) {
 		do 
@@ -103,168 +189,201 @@ void sys_path::get_dir_path(vector<wstring>& dirPaths, const wstring& dirPath) {
 				continue;
 			}
 
-			wstring fileName = fileAttr.cFileName;
+			string fileName = fileAttr.cFileName;
 
-			if (wstring(TEXT(".")) == fileName || wstring(TEXT("..")) == fileName) {
+			if (string((".")) == fileName || string(("..")) == fileName) {
 				continue;
 			}
 
 			if (fileAttr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				dirPaths.push_back(dirPath + fileName + TEXT("/"));
+				dirPaths.push_back(dirPath + fileName + ("/"));
 			}
 
 		} while (false);
 
-		while (FindNextFile(handle, &fileAttr)) {
+		while (FindNextFileA(handle, &fileAttr)) {
 			if (fileAttr.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) {
 				continue;
 			}
 
-			wstring fileName = fileAttr.cFileName;
+			string fileName = fileAttr.cFileName;
 
-			if (wstring(TEXT(".")) == fileName || wstring(TEXT("..")) == fileName) {
+			if (string((".")) == fileName || string(("..")) == fileName) {
 				continue;
 			}
 
 			if (fileAttr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				dirPaths.push_back(dirPath + fileName + TEXT("/"));
+				dirPaths.push_back(dirPath + fileName + ("/"));
 			}
 		}
 
 		FindClose(handle);
 	}
-}
+#else
+	DIR* dir = opendir(dirPath.c_str());
 
-wstring sys_path::get_dir_name(const wstring& dirPath) {
-	if (dirPath.empty()) {
-		return wstring(TEXT(""));
+	if (dir == NULL) {
+		return;
 	}
 
-	wstring temp = dirPath;
+	dirent* entry;
+
+	while ((entry = readdir(dir)) != NULL) {
+		if (entry->d_type != DT_DIR) {
+			continue;
+		}
+
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+			continue;
+		}
+
+		dirPaths.push_back(dirPath + entry->d_name + "/");
+	}
+
+	closedir(dir);
+#endif
+}
+
+string sys_path::get_dir_name(const string& dirPath) {
+	if (dirPath.empty()) {
+		return string((""));
+	}
+
+	string temp = dirPath;
 	temp.erase(temp.end() - 1);
 
 	return get_file_name(temp);
 }
 
-wstring sys_path::get_file_name(const wstring& dirPath) {
+string sys_path::get_file_name(const string& dirPath) {
 	if (dirPath.empty()) {
-		return wstring(L"");
+		return string("");
 	}
 
-	wstring temp = dirPath;
-	sys_strhelper::replace(temp, L"/", L"\\");
+	string temp = dirPath;
+	sys_strhelper::replace(temp, "/", "\\");
 
-	return temp.substr(temp.rfind(L'/') + 1);
+	return temp.substr(temp.rfind('/') + 1);
 }
 
-wstring sys_path::get_file_title(const wstring& dirPath) {
+string sys_path::get_file_title(const string& dirPath) {
 	if (dirPath.empty()) {
-		return wstring(L"");
+		return string("");
 	}
 
-	wstring temp = get_file_name(dirPath);
-	wstring::size_type extendNameStartIndex = temp.rfind(L'.');
+	string temp = get_file_name(dirPath);
+	string::size_type extendNameStartIndex = temp.rfind('.');
 
-	if (wstring::npos != extendNameStartIndex) {
+	if (string::npos != extendNameStartIndex) {
 		return temp.substr(0, extendNameStartIndex);
 	} else {
 		return temp;
 	}
 }
 
-wstring sys_path::get_file_extend_name(const wstring& path) {
+string sys_path::get_file_extend_name(const string& path) {
 	if (path.empty()) {
-		return wstring(TEXT(""));
+		return string((""));
 	}
 
-	wstring::size_type index = path.rfind(L'.');
+	string::size_type index = path.rfind('.');
 
-	if (wstring::npos != index) {
-		wstring extend_name = path.substr(index);
+	if (string::npos != index) {
+		string extend_name = path.substr(index);
 		sys_strhelper::lower(extend_name);
 		return extend_name;
 	} else {
-		return wstring(TEXT(""));
+		return string((""));
 	}
 }
 
-wstring sys_path::get_dir_path(const wstring& dirPath) {
+string sys_path::get_dir_path(const string& dirPath) {
 	if (dirPath.empty()) {
-		return wstring(TEXT(""));
+		return string((""));
 	}
 
-	wstring temp = dirPath;
-	sys_strhelper::replace(temp, L"/", L"\\");
+	string temp = dirPath;
+	sys_strhelper::replace(temp, "/", "\\");
 
-	wstring::size_type lastDirIndex = temp.rfind(L'/');
-	if (wstring::npos == lastDirIndex || temp.size() - 1 == lastDirIndex) {
+	string::size_type lastDirIndex = temp.rfind('/');
+	if (string::npos == lastDirIndex || temp.size() - 1 == lastDirIndex) {
 		return temp;
 	}
 
 	return temp.substr(0, lastDirIndex + 1);
 }
 
-bool sys_path::create_multi_dir(const wstring& dir) {
+bool sys_path::create_multi_dir(const string& dir) {
 	if (dir.empty()) {
 		return true;
 	}
 
-	if (_waccess(dir.c_str(), 0) == 0)
+	if (_access(dir.c_str(), 0) == 0)
 		return true;
 
-	TCHAR szTemp[1024] = {TEXT('\0')};
-	wstring::size_type nPos = dir.find(TEXT('/'));
-	while (wstring::npos != nPos)
+	char szTemp[1024] = {('\0')};
+	string::size_type nPos = dir.find(('/'));
+	while (string::npos != nPos)
 	{
-		wcsncpy_s(szTemp, 1024, dir.c_str(), nPos + 1);
-		szTemp[nPos + 1] = TEXT('\0');
-		if (_waccess(szTemp, 00) == -1) {
-			if (!CreateDirectory(szTemp, NULL))
+		strncpy_s(szTemp, 1024, dir.c_str(), nPos + 1);
+		szTemp[nPos + 1] = '\0';
+		if (_access(szTemp, 00) == -1) {
+#ifdef _WIN32
+			if (!CreateDirectoryA(szTemp, NULL))
 				return false;
+#else
+			if (mkdir(szTemp, 0000777) != 0)
+				return false;
+#endif
 		}
 
-		nPos = dir.find(TEXT('/'), nPos + 1);
+		nPos = dir.find('/', nPos + 1);
 	}
 
-	if (_waccess(dir.c_str(), 0) == -1) {
-		if (!CreateDirectory(dir.c_str(), NULL))
+	if (_access(dir.c_str(), 0) == -1) {
+#ifdef _WIN32
+		if (!CreateDirectoryA(dir.c_str(), NULL))
 			return false;
+#else
+		if (mkdir(dir.c_str(), 0000777) != 0)
+			return false;
+#endif
 	}
 
 	return true;
 }
 
-bool sys_path::is_dir(const wstring& dir) {
+bool sys_path::is_dir(const string& dir) {
 	if (dir.empty()) {
 		return false;
 	}
 
-	TCHAR lastChar = dir.at(dir.size() - 1);
+	char lastChar = dir.at(dir.size() - 1);
 
-	return L'\\' == lastChar || L'/' == lastChar;
+	return '\\' == lastChar || '/' == lastChar;
 }
 
-bool sys_path::is_exist(const wstring& path) {
-	return 0 == _waccess(path.c_str(), 0);
+bool sys_path::is_exist(const string& path) {
+	return 0 == _access(path.c_str(), 0);
 }
 
-void sys_path::delete_file(const wstring& path) {
-	DeleteFile(path.c_str());
+void sys_path::delete_file(const string& path) {
+	remove(path.c_str());
 }
 
-void sys_path::delete_dir(const wstring& dir, bool forceDeleteNoEmptyDir) {
+void sys_path::delete_dir(const string& dir, bool forceDeleteNoEmptyDir) {
 	if (!forceDeleteNoEmptyDir) {
-		RemoveDirectory(dir.c_str());
+		remove(dir.c_str());
 	} else {
 		delete_sub_dir(dir);
 
 		//Remove itself
-		RemoveDirectory(dir.c_str());
+		remove(dir.c_str());
 	}
 }
 
-void sys_path::delete_sub_dir(const wstring& dir) {
-	vector<wstring> subFiles;
+void sys_path::delete_sub_dir(const string& dir) {
+	vector<string> subFiles;
 
 	get_file_path(subFiles, dir);
 
@@ -272,7 +391,7 @@ void sys_path::delete_sub_dir(const wstring& dir) {
 		delete_file(subFiles[i]);
 	}	
 
-	vector<wstring> subDirs;
+	vector<string> subDirs;
 	get_dir_path(subDirs, dir);
 
 	for (int i = 0; i < (int)subFiles.size(); ++i) {
@@ -280,34 +399,44 @@ void sys_path::delete_sub_dir(const wstring& dir) {
 	}
 }
 
-wstring sys_path::get_module_path() {
-	TCHAR path[2048] = {0};
-	GetModuleFileName(NULL, path, 2048);
+string sys_path::get_module_path() {
+	char path[2048] = {0};
 
-	return wstring(path);
+#ifdef _WIN32
+	GetModuleFileNameA(NULL, path, 2048);
+#else
+	u32 size = 2048;
+	_NSGetExecutablePath(path, &size);
+#endif
+
+	return string(path);
 }
 
-wstring sys_path::get_system_temp_dir() {
+string sys_path::get_system_temp_dir() {
 #ifdef _WIN32
-	TCHAR path[2048] = {0};	
-	GetTempPath(MAX_PATH, path);
+	char path[2048] = {0};	
+	GetTempPathA(MAX_PATH, path);
 
-	return wstring(path);
+	return string(path);
 #else
-
+	return "";
 #endif
 
 
 }
 
-bool sys_path::copy_file(const wstring& dst, const wstring& src, bool fail_if_exist) {
-	return ::CopyFileW(src.c_str(), dst.c_str(), fail_if_exist) == TRUE;
+bool sys_path::copy_file(const string& dst, const string& src, bool fail_if_exist) {
+#ifdef _WIN32
+	return ::CopyFileA(src.c_str(), dst.c_str(), fail_if_exist) == TRUE;
+#else
+	return system(((string)(sys_strcombine()<<"cp -r "<<src.c_str()<<" "<<dst.c_str())).c_str()) == 0;
+#endif
 }
 
-bool sys_path::move_file(const wstring& dst, const wstring& src, bool fail_if_exist) {
+bool sys_path::move_file(const string& dst, const string& src, bool fail_if_exist) {
 	if (is_exist(dst)) {
 		return false;
 	}
 
-	return ::MoveFileW(src.c_str(), dst.c_str()) == TRUE;
+	return rename(src.c_str(), dst.c_str()) == 0;
 }

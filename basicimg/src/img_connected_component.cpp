@@ -10,14 +10,14 @@ namespace basicimg {
 		template<class T>
 		static void connected_component(img_multi_connected_components& ccs, const mt_mat& image, const mt_scalar& background, img_Connected_Type connected_type) {
 			if (image.channel() == 1) {
-				ml_connected_component_true_condition_imp<sys_array_type<T, 1>> cc;
-				cc.normal_extract(ccs, image, img_mask_info<sys_array_type<T, 1>>(sys_array_type<T, 1>(background.value)), connected_type);
+				ml_connected_component_base<sys_array_type<T, 1>> cc;
+				cc.ture_normal_extract(ccs, image, img_mask_info<sys_array_type<T, 1>>(sys_array_type<T, 1>(background.value)), connected_type);
 			} else if (image.channel() == 3) {
-				ml_connected_component_true_condition_imp<sys_array_type<T, 3>> cc;
-				cc.normal_extract(ccs, image, img_mask_info<sys_array_type<T, 3>>(sys_array_type<T, 3>(background.value)), connected_type);
+				ml_connected_component_base<sys_array_type<T, 3>> cc;
+				cc.ture_normal_extract(ccs, image, img_mask_info<sys_array_type<T, 3>>(sys_array_type<T, 3>(background.value)), connected_type);
 			} else if (image.channel() == 4) {
-				ml_connected_component_true_condition_imp<sys_array_type<T, 4>> cc;
-				cc.normal_extract(ccs, image, img_mask_info<sys_array_type<T, 4>>(sys_array_type<T, 4>(background.value)), connected_type);
+				ml_connected_component_base<sys_array_type<T, 4>> cc;
+				cc.ture_normal_extract(ccs, image, img_mask_info<sys_array_type<T, 4>>(sys_array_type<T, 4>(background.value)), connected_type);
 			}
 
 			

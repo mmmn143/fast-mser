@@ -20,7 +20,7 @@ using namespace basicsys;
 #include <basicmath.h>
 using namespace basicmath;
 
-using namespace basicimg;
+
 
 #include "img_types.h"
 #include "img_img.h"
@@ -28,3 +28,5 @@ using namespace basicimg;
 #include "img_canny.h"
 #include "img_auto_threshold_canny.h"
 #include "img_helper.h"
+
+using namespace basicimg;

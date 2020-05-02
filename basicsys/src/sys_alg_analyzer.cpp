@@ -3,12 +3,12 @@
 #include "sys_alg_analyzer.h"
 #include "sys_thread_lock.h"
 
-map<wstring, i64> sys_alg_analyzer::m_info;
+map<string, i64> sys_alg_analyzer::m_info;
 void* sys_alg_analyzer::m_mutex = NULL;
 
 void sys_alg_analyzer::release() {
 	if (basiclog::log_logger::get_logger() != NULL) {
-		basiclog::log_logger::get_logger()->print(L"sys_alg_analyzer", L"sys_alg_analyzer", sys_strcombine()<<m_info, __FILE__, __LINE__);
+		basiclog::log_logger::get_logger()->print("sys_alg_analyzer", "sys_alg_analyzer", sys_strcombine()<<m_info, __FILE__, __LINE__);
 	}
 
 	sys_thread_lock::release_mutex(m_mutex);
@@ -19,7 +19,7 @@ void sys_alg_analyzer::init() {
 	m_mutex = sys_thread_lock::create_mutex();
 }
 
-void sys_alg_analyzer::set(const wstring& tag, i64 v) {
+void sys_alg_analyzer::set(const string& tag, i64 v) {
 	if (m_mutex == NULL) {
 		return;
 	}
@@ -34,7 +34,7 @@ void sys_alg_analyzer::set(const wstring& tag, i64 v) {
 	}
 }
 
-void sys_alg_analyzer::add(const wstring& tag, i64 v) {
+void sys_alg_analyzer::add(const string& tag, i64 v) {
 	if (m_mutex == NULL) {
 		return;
 	}
@@ -48,14 +48,14 @@ void sys_alg_analyzer::add(const wstring& tag, i64 v) {
 	}
 }
 
-void sys_alg_analyzer::max_(const wstring& tag, i64 v) {
+void sys_alg_analyzer::max_(const string& tag, i64 v) {
 	if (m_mutex == NULL) {
 		return;
 	}
 
 	sys_thread_lock lock(m_mutex);
 
-	map<wstring, i64>::iterator iter = m_info.find(tag);
+	map<string, i64>::iterator iter = m_info.find(tag);
 
 	if (iter == m_info.end()) {
 		m_info.insert(make_pair(tag, v));

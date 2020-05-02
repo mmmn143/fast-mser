@@ -18,6 +18,22 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\test\mt_01_bag_test.cpp" />
+    <ClCompile Include="..\..\test\mt_block_memory_test.cpp" />
+    <ClCompile Include="..\..\test\mt_continuous_memory_test.cpp" />
+    <ClCompile Include="..\..\test\mt_help_test.cpp" />
+    <ClCompile Include="..\..\test\mt_longest_common_substring_test.cpp" />
+    <ClCompile Include="..\..\test\mt_mat_test.cpp" />
+    <ClCompile Include="..\..\test\mt_max_sum_for_continuous_element_test.cpp" />
+    <ClCompile Include="..\..\test\mt_openmp_test.cpp" />
+    <ClCompile Include="..\..\test\mt_sort_test.cpp" />
+    <ClCompile Include="..\..\test\mt_top_k_test.cpp" />
+    <ClCompile Include="..\..\test\test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\test\test.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{70959FC4-72CC-4513-AA48-B2AC3333015F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -147,22 +163,6 @@
       <AdditionalDependencies>basicsys.lib;basiclog.lib;basicmath.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\test\mt_block_memory_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_continuous_memory_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_longest_common_substring_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_max_sum_for_continuous_element_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_01_bag_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_help_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_mat_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_openmp_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_sort_test.cpp" />
-    <ClCompile Include="..\..\src\test\mt_top_k_test.cpp" />
-    <ClCompile Include="..\..\src\test\test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\test\test.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

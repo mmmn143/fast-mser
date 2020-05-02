@@ -13,26 +13,34 @@ void img_mser_helper::shallow_copy_msers(vector<const img_mser*>& mser_pointers,
 	}
 }
 
-void img_mser_helper::save_msers(const img_multi_msers& msers, const wstring& save_dir, const mt_size& dst_size, const mt_scalar& forground_color /* = img_Color_Black */, const mt_scalar& background_color /* = img_Color_White */, b8 gray /* = sys_true */) {
+void img_mser_helper::save_msers(const img_multi_msers& msers, const string& save_dir, const mt_size& dst_size, const mt_scalar& forground_color /* = img_Color_Black */, const mt_scalar& background_color /* = img_Color_White */, b8 gray /* = sys_true */) {
 	sys_path::create_multi_dir(save_dir);
 	vector<i32> stack_helper;
 
 	mt_mat image;
 	
 	for (i32 i = 0; i < (i32)msers.m_msers[0].size(); ++i) {
-		image_from_mser(image, msers.m_msers[0][i], dst_size, forground_color, background_color, gray, stack_helper);
+		image_from_mser(image, msers.m_msers[0][i], dst_size, forground_color, background_color, gray, &stack_helper);
 
-		img_img::save(sys_strcombine()<<save_dir<<L"from_min_"<<i<<L".png", image);
+		img_img::save(sys_strcombine()<<save_dir<<"from_min_"<<i<<".png", image);
 	}
 
 	for (i32 i = 0; i < (i32)msers.m_msers[1].size(); ++i) {
-		image_from_mser(image, msers.m_msers[1][i], dst_size, forground_color, background_color, gray, stack_helper);
+		image_from_mser(image, msers.m_msers[1][i], dst_size, forground_color, background_color, gray, &stack_helper);
 
-		img_img::save(sys_strcombine()<<save_dir<<L"from_max_"<<i<<L".png", image);
+		img_img::save(sys_strcombine()<<save_dir<<"from_max_"<<i<<".png", image);
 	}
 }
 
-void img_mser_helper::image_from_mser(mt_mat& res, const img_mser& mser, const mt_size& dst_size, const mt_scalar& forground_color /* = img_Color_Black */, const mt_scalar& background_color /* = img_Color_White */, b8 gray /* = sys_true */, vector<i32>& stack_helper) {
+void img_mser_helper::image_from_mser(mt_mat& res, const img_mser& mser, const mt_size& dst_size, const mt_scalar& forground_color /* = img_Color_Black */, const mt_scalar& background_color /* = img_Color_White */, b8 gray /* = sys_true */, vector<i32>* p_stack_helper) {
+	vector<i32> temp;
+
+	if (p_stack_helper == NULL) {
+		p_stack_helper = &temp;
+	}
+
+	vector<i32>& stack_helper = *p_stack_helper;
+	
 	int expend_height = 0;
 	int expend_width = 0;
 	if (mser.m_rect.m_width > mser.m_rect.m_height) {
@@ -45,7 +53,7 @@ void img_mser_helper::image_from_mser(mt_mat& res, const img_mser& mser, const m
 	res.set(background_color);
 	mt_point current_pt;
 
-	if (mser.m_memory_type == img_mser::Memory_Type_Self || mser.m_memory_type == img_mser::Memory_Type_Share) {
+	if (mser.m_memory_type == img_mser::Memory_Type_Self || mser.m_memory_type == img_mser::Memory_Type_Share || mser.m_memory_type == img_mser::Memory_Type_Range) {
 		for (int i = 0; i < mser.m_size; ++i) {
 			current_pt.m_x = mser.m_points[i].m_x - mser.m_rect.m_left + expend_width;
 			current_pt.m_y = mser.m_points[i].m_y - mser.m_rect.m_top + expend_height;
@@ -163,7 +171,7 @@ void img_mser_helper::generate_mser_result_image(mt_mat& res, const mt_mat& src,
 }
 
 void img_mser_helper::visit_pixel_test(const img_multi_msers& msers) {
-	sys_timer t(L"visit_pixel_test");
+	sys_timer t("visit_pixel_test");
 	t.begin();
 
 	vector<i32> stack_helper;
@@ -171,17 +179,25 @@ void img_mser_helper::visit_pixel_test(const img_multi_msers& msers) {
 	mt_mat image;
 
 	for (i32 i = 0; i < (i32)msers.m_msers[0].size(); ++i) {
-		visit_pixel_test(msers.m_msers[0][i], stack_helper);
+		visit_pixel_test(msers.m_msers[0][i], &stack_helper);
 	}
 
 	for (i32 i = 0; i < (i32)msers.m_msers[1].size(); ++i) {
-		visit_pixel_test(msers.m_msers[1][i], stack_helper);
+		visit_pixel_test(msers.m_msers[1][i], &stack_helper);
 	}
 
 	t.end();
 }
 
-void img_mser_helper::visit_pixel_test(const img_mser& mser, vector<i32>& stack_helper /* = vector<i32>() */) {
+void img_mser_helper::visit_pixel_test(const img_mser& mser, vector<i32>* p_stack_helper /* = vector<i32>() */) {
+	vector<i32> temp;
+
+	if (p_stack_helper == NULL) {
+		p_stack_helper = &temp;
+	}
+
+	vector<i32>& stack_helper = *p_stack_helper;
+
 	i32 sum_x = 0;
 	i32 sum_y = 0;
 	mt_point current_pt;
@@ -190,29 +206,6 @@ void img_mser_helper::visit_pixel_test(const img_mser& mser, vector<i32>& stack_
 		for (int i = 0; i < mser.m_size; ++i) {
 			sum_x += mser.m_points[i].m_x;
 			sum_y += mser.m_points[i].m_y;
-		}
-	} else if (mser.m_memory_type == img_mser::Memory_Type_Recursive) {
-		i32 self_size = mser.m_points[0].m_y;
-
-		for (i32 i = 0; i < self_size; ++i) {
-			sum_x += mser.m_points[i].m_x;
-			sum_x += mser.m_points[i].m_y;
-		}
-
-		i32 cur_size = self_size;
-		mt_point* cur_pt = mser.m_points + 1 + self_size;
-
-		while (cur_size < mser.m_size) {
-			mt_point* cur_memory_start = cur_pt->m_x - mser.m_points[0].m_x + mser.m_points;
-			for (i32 k = 0; k < cur_pt->m_y; ++k) {
-				sum_x += cur_memory_start->m_x;
-				sum_y += cur_memory_start->m_y;
-
-				++cur_memory_start;
-			}
-
-			cur_pt += 1;
-			cur_size += cur_pt->m_y;
 		}
 	} else if (mser.m_memory_type == img_mser::Memory_Type_Share_Parallel_4 || mser.m_memory_type == img_mser::Memory_Type_Recursive_Parallel_4) {
 		stack_helper.push_back(0);
@@ -299,5 +292,5 @@ void img_mser_helper::visit_pixel_test(const img_mser& mser, vector<i32>& stack_
 		}
 	}
 
-	//basiclog_info2(sys_strcombine()<<L"sum_x: "<<sum_x<<L", sum_y: "<<sum_y);
+	//basiclog_info2(sys_strcombine()<<"sum_x: "<<sum_x<<", sum_y: "<<sum_y);
 }

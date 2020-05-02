@@ -75,14 +75,14 @@ public:
 static auto_gdiplus s_gdiplus_helper;
 
 cv_font::cv_font() {
-	m_font_name = TEXT("宋体");
+	m_font_name = ("宋体");
 	m_size = 20;
 	m_italic = false;
 	m_bold = false;
 	m_under_line = false;
 }
 
-cv_font::cv_font(const wstring& name, int size, b8 italic, b8 bold, b8 under_line) {
+cv_font::cv_font(const string& name, int size, b8 italic, b8 bold, b8 under_line) {
 	m_font_name = name;
 	m_size = size;
 	m_italic = italic;
@@ -215,8 +215,8 @@ void img_draw::draw_line(const mt_point& start, const mt_point& stop, const cv_p
 	private_draw::from_engineer(m_draw_engineer)->DrawLine(&gdipen, private_draw::from_point(start), private_draw::from_point(stop));
 
 	//CLSID clsid;
-	//GetEncoderClsid(L"image/png", &clsid);
-	//((Gdiplus::Bitmap*)m_draw_map)->Save(L"haha.png", &clsid);
+	//GetEncoderClsid("image/png", &clsid);
+	//((Gdiplus::Bitmap*)m_draw_map)->Save("haha.png", &clsid);
 
 	end_draw();
 }
@@ -293,7 +293,7 @@ void img_draw::drawDirection(const mt_point& start, const mt_point& stop, const 
 	//circle(colorImage, stop, 4, color, thicknes);
 }
 
-mt_size img_draw::measure_text_size(const wstring& text, const cv_font& font, int format) {
+mt_size img_draw::measure_text_size(const string& text, const cv_font& font, int format) {
 	Gdiplus::Graphics gh(GetDesktopWindow());
 
 	int font_style = Gdiplus::FontStyleRegular;
@@ -310,7 +310,7 @@ mt_size img_draw::measure_text_size(const wstring& text, const cv_font& font, in
 		font_style |= Gdiplus::FontStyleUnderline;
 	}
 
-	Gdiplus::Font gdifont(font.m_font_name.c_str(), (float)font.m_size, font_style);
+	Gdiplus::Font gdifont(sys_strconvert::utf16_from_local(font.m_font_name).c_str(), (float)font.m_size, font_style);
 
 	Gdiplus::RectF rect;
 	Gdiplus::StringFormat str_format;
@@ -319,12 +319,12 @@ mt_size img_draw::measure_text_size(const wstring& text, const cv_font& font, in
 
 	Gdiplus::RectF layout_rect(0, 0, FLT_MAX, FLT_MAX);
 
-	gh.MeasureString(text.c_str(), (int)text.length(), &gdifont, layout_rect, &str_format, &rect);
+	gh.MeasureString(sys_strconvert::utf16_from_local(text).c_str(), (int)text.length(), &gdifont, layout_rect, &str_format, &rect);
 
 	return mt_size((int)rect.Width + 1, (int)rect.Height + 1);
 }
 
-void img_draw::draw_text(const wstring& text, const mt_rect& rect, const cv_font& font, const mt_scalar& color, int horizontal_align_type, int vertical_align_type, int format) {
+void img_draw::draw_text(const string& text, const mt_rect& rect, const cv_font& font, const mt_scalar& color, int horizontal_align_type, int vertical_align_type, int format) {
 	int font_style = Gdiplus::FontStyleRegular;
 
 	if (font.m_italic) {
@@ -339,7 +339,7 @@ void img_draw::draw_text(const wstring& text, const mt_rect& rect, const cv_font
 		font_style |= Gdiplus::FontStyleUnderline;
 	}
 
-	Gdiplus::Font gdifont(font.m_font_name.c_str(), (float)font.m_size, font_style);
+	Gdiplus::Font gdifont(sys_strconvert::utf16_from_local(font.m_font_name).c_str(), (float)font.m_size, font_style);
 	Gdiplus::StringFormat str_format;
 
 	str_format.SetAlignment((Gdiplus::StringAlignment)horizontal_align_type);
@@ -349,11 +349,11 @@ void img_draw::draw_text(const wstring& text, const mt_rect& rect, const cv_font
 	Gdiplus::RectF gdirect((float)rect.m_left, (float)rect.m_top, (float)rect.m_width, (float)rect.m_height);
 
 	Gdiplus::SolidBrush brush(private_draw::real_color(color, this));  
-	private_draw::from_engineer(m_draw_engineer)->DrawString(text.c_str(), (int)text.length(), &gdifont, gdirect, &str_format, &brush);
+	private_draw::from_engineer(m_draw_engineer)->DrawString(sys_strconvert::utf16_from_local(text).c_str(), (int)text.length(), &gdifont, gdirect, &str_format, &brush);
 	end_draw();
 }
 
-void img_draw::draw_text(const wstring& text, const mt_point& offset, const cv_font& font, const mt_scalar& color, int horizontal_align_type, int vertical_align_type, int format) {
+void img_draw::draw_text(const string& text, const mt_point& offset, const cv_font& font, const mt_scalar& color, int horizontal_align_type, int vertical_align_type, int format) {
 	int font_style = Gdiplus::FontStyleRegular;
 
 	if (font.m_italic) {
@@ -368,7 +368,7 @@ void img_draw::draw_text(const wstring& text, const mt_point& offset, const cv_f
 		font_style |= Gdiplus::FontStyleUnderline;
 	}
 
-	Gdiplus::Font gdifont(font.m_font_name.c_str(), (float)font.m_size, font_style);
+	Gdiplus::Font gdifont(sys_strconvert::utf16_from_local(font.m_font_name).c_str(), (float)font.m_size, font_style);
 	Gdiplus::StringFormat str_format;
 
 	str_format.SetAlignment((Gdiplus::StringAlignment)horizontal_align_type);
@@ -378,7 +378,7 @@ void img_draw::draw_text(const wstring& text, const mt_point& offset, const cv_f
 	Gdiplus::PointF gdipoint((float)offset.m_x, (float)offset.m_y);
 
 	Gdiplus::SolidBrush brush(private_draw::real_color(color, this));  
-	private_draw::from_engineer(m_draw_engineer)->DrawString(text.c_str(), (int)text.length(), &gdifont, gdipoint, &str_format, &brush);
+	private_draw::from_engineer(m_draw_engineer)->DrawString(sys_strconvert::utf16_from_local(text).c_str(), (int)text.length(), &gdifont, gdipoint, &str_format, &brush);
 	end_draw();
 }
 

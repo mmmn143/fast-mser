@@ -1,8 +1,5 @@
-// Please see http://www.vlfeat.org/ for its original implementation.
-
 #include "stdafx.h"
 #include "img_vlfeat_mser.h"
-
 
 /** @brief Maximum value
 
@@ -1212,7 +1209,7 @@ void mser_new(void *&fv, int ndims, int const *dims) {
 
 			i32 memory_cost = sizeof(unsigned int) * f->nel + sizeof(unsigned int) * f->nel + sizeof(MserReg) * f->nel;
 
-			basiclog_info2(sys_strcombine()<<L"linear memory cost "<< memory_cost / 1024.0 / 1024.0 <<L"MB");
+			basiclog_info2(sys_strcombine()<<"linear memory cost "<< memory_cost / 1024.0 / 1024.0 <<"MB");
 		}
 	}
 
@@ -1821,7 +1818,7 @@ mser_process(MserFilt *f, unsigned char const *im) {
 
 		i32 memory_cost = sizeof(MserExtrReg) * ner;
 
-		basiclog_info2(sys_strcombine()<<L"linear memory cost "<< memory_cost / 1024.0 / 1024.0 <<L"MB");
+		basiclog_info2(sys_strcombine()<<"linear memory cost "<< memory_cost / 1024.0 / 1024.0 <<"MB");
 
         f->rer = ner;
 
@@ -2417,6 +2414,6 @@ void img_vlfeat_mser::extract_pixel(img_multi_msers& msers, u8 gray_mask) {
 
 		m_channel_total_pixel_number += t_mser[i].m_size;
 
-		//basiclog_info2(sys_strcombine()<<L"gray "<<t_mser[i].m_gray_level <<L" area "<<t_mser[i].m_size);
+		//basiclog_info2(sys_strcombine()<<"gray "<<t_mser[i].m_gray_level <<" area "<<t_mser[i].m_size);
 	}
 }

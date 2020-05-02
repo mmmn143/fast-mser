@@ -3,7 +3,7 @@
 
 static const i32 Block_Size = 1000000;
 
-mt_mat img_stroke_width_transform::swt(__in mt_mat& edge, __in mt_mat& gradient_x, __in mt_mat& gradient_y, const params& pars) {	
+mt_mat img_stroke_width_transform::swt(mt_mat& edge, mt_mat& gradient_x, mt_mat& gradient_y, const params& pars) {	
 	point_memory memory;
 
 	vector<swt_ray> rays;
@@ -65,7 +65,6 @@ mt_mat img_stroke_width_transform::swt(__in mt_mat& edge, __in mt_mat& gradient_
 				start_g_y = -start_g_y;
 			}
 
-			//表示第一次向梯度方向移动
 			first = sys_true;
 			has_non_edge_pixel = sys_false;
 
@@ -98,20 +97,16 @@ mt_mat img_stroke_width_transform::swt(__in mt_mat& edge, __in mt_mat& gradient_
 					}
 
 					if (first && 255 == edge.at<uchar>(next_y, next_x)) {
-						// 从射线起始点出发，第一次搜寻下一点，如果下一点是边缘，则不做考虑
 						continue;
 					} 
 
 					if (255 == edge.at<uchar>(next_y, next_x)) {	
 						if (has_non_edge_pixel) {
-							//必须有至少一个非边缘点,才能组成笔划
-							// 尝试搜寻领域的9各点，第一个点为当前点
 							for (i32 surroundIndex = 0; surroundIndex < 9; ++surroundIndex) {
 								surround_x = next_x + img_DX_3_9[surroundIndex];
 								surround_y = next_y + img_DY_3_9[surroundIndex];
 
 								if (0 != surroundIndex) {
-									// 验证不是当前点的合法性
 									if (!img_img::point_in_image(mt_point(surround_x, surround_y), edge) 
 										|| (abs(surround_x - ray_pts.front().m_x) <= 1 && abs(surround_y - ray_pts.front().m_y) <= 1) 
 										|| 255 != edge.at<u8>(surround_y, surround_x, 0)) {
@@ -231,7 +226,7 @@ mt_mat img_stroke_width_transform::normalize_swt_image(mt_mat& swt_image, i16 in
 	return ret;
 }
 
-void img_stroke_width_transform::set_ray_width(__in mt_mat& swt_image, const swt_ray& ray) {
+void img_stroke_width_transform::set_ray_width(mt_mat& swt_image, const swt_ray& ray) {
 	for (mt_point* iter = ray.m_start; iter < ray.m_stop; ++iter) {
 		if (ray.m_width < swt_image.at<i16>(iter->m_y, iter->m_x)) {
 			swt_image.at<i16>(iter->m_y, iter->m_x) = ray.m_width;

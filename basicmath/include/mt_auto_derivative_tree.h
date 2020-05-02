@@ -270,7 +270,7 @@ namespace basicmath {
 			} else if (child_node == m_childs[1]) {
 				return -derivative_res;
 			} else {
-				basiclog_assert_message2(sys_false, L"input child_node is not in the m_childs!");
+				basiclog_assert_message2(sys_false, "input child_node is not in the m_childs!");
 				return mt_mat();
 			}
 		}
@@ -904,5 +904,144 @@ namespace basicmath {
 		}
 
 		i32 m_dim;
+	};
+
+	class mt_ad_helper {
+	public:
+
+		template<class T>
+		static mt_mat softmax_derivate(const mt_mat& softmax_res) {
+			mt_mat res(softmax_res, 0);
+			const u8* ptr_softmax_res_dim0 = softmax_res.data();
+			u8* ptr_derivate_dim0 = res.data();
+
+			for (i32 row = 0; row < softmax_res.size()[0]; ++row) {
+				const T* ptr_softmax_res_dim1 = (const T*)ptr_softmax_res_dim0;
+				T* ptr_derivate_dim1 = (T*)ptr_derivate_dim0;
+
+				for (i32 col = 0; col < softmax_res.size()[1]; ++col) {
+					for (i32 i = 0; i < softmax_res.size()[1]; ++i) {
+						if (col == i) {
+							ptr_derivate_dim1[col] += ptr_softmax_res_dim1[i] * (1 - ptr_softmax_res_dim1[i]);
+						} else {
+							ptr_derivate_dim1[col] += -ptr_softmax_res_dim1[i] * ptr_softmax_res_dim1[col];
+						}
+					}
+				}
+
+				ptr_softmax_res_dim0 += softmax_res.step()[0];
+				ptr_derivate_dim0 += res.step()[0];
+			}
+
+			return res;
+		}
+
+		template<class T>
+		static mt_mat relu_derivate(const mt_mat& relu_res, f64 negative_slope) {
+			mt_mat res(relu_res, mt_mat::Construct_Type_Create_As_Size);
+
+			mt_array_element_const_iterator relu_res_iter(relu_res);
+			mt_array_element_iterator res_iter(res);
+
+			for (;;) {
+				const T* ptr_relu_res = (const T*)relu_res_iter.data();
+
+				if (ptr_relu_res == NULL) {
+					break;
+				}
+
+				T* ptr_res = (T*)res_iter.data();
+
+				for (i32 c = 0; c < relu_res.channel(); ++c) {
+					if (ptr_relu_res[c] > 0) {
+						ptr_res[c] = 1;
+					} else {
+						ptr_res[c] = (T)negative_slope;
+					}
+				}
+			}
+
+			return res;
+		}
+
+		template<class T>
+		static mt_mat logarithmic_loss_derivative(const mt_mat& predicted_mat, const mt_mat& matching_mat) {
+			if (predicted_mat.size()[1] == 1) {
+				//logistic
+				return ((predicted_mat - matching_mat) / (predicted_mat * (1 - predicted_mat)));
+			} else {
+				//softmax
+
+				mt_mat res(predicted_mat, mt_mat::Construct_Type_Create_As_Size);
+
+				basiclog_info2(predicted_mat);
+
+				const u8* ptr_predicted_dim0 = predicted_mat.data();
+				const u8* ptr_matching_dim0 = matching_mat.data();
+				u8* ptr_res_dim0 = res.data();
+
+				for (i32 row = 0; row < matching_mat.size()[0]; ++row) {
+
+					const T* ptr_predicted_dim1 = (const T*)ptr_predicted_dim0;
+					const T* ptr_matching_dim1 = (const T*)ptr_matching_dim0;
+					T* ptr_res_dim1 = (T*)ptr_res_dim0;
+
+					for (i32 col = 0; col < matching_mat.size()[1]; ++col) {
+						if ((i32)ptr_matching_dim1[col] == 1) {
+							ptr_res_dim1[col] = -1 / ptr_predicted_dim1[col];
+						}
+					}
+
+					ptr_predicted_dim0 += predicted_mat.step()[0];
+					ptr_matching_dim0 += matching_mat.step()[0];
+					ptr_res_dim0 += res.step()[0];
+				}
+
+				basiclog_info2(res);
+
+				return res;
+			}
+		}
+
+		template<class T>
+		static mt_mat repeat_derivative(const mt_mat& src, const mt_mat& derivative_res) {
+			mt_mat res = mt_mat(src, 0);
+
+			basicmath_mat_request_memory(i32, repeated_times, res.dim());
+
+			for (i32 i = 0; i < res.dim(); ++i) {
+				repeated_times[i] = derivative_res.size()[i] / res.size()[i];
+			}
+
+			mt_array_index_iterator iter(res.dim(), repeated_times);
+			i32 src_channel = src.channel();
+			i32 nchannels = derivative_res.channel() / src_channel;
+
+			vector<mt_range> start_ranges;
+			start_ranges.resize(res.dim());
+
+			while (iter.next()) {
+
+				for (i32 i = 0; i < res.dim(); ++i) {
+					start_ranges[i].m_start = iter.position()[i] * res.size()[i];
+					start_ranges[i].m_end = start_ranges[i].m_start + res.size()[i];
+				}
+
+				for (i32 c = 0; c < nchannels; ++c) {
+					i32 start_channel = c * src_channel;
+					res += derivative_res.sub(start_ranges).sub_channel(start_channel, start_channel + src_channel);
+				}
+			}
+
+			basicmath_mat_release(repeated_times);
+			return res;
+		}
+
+		static mt_mat softmax_derivate(const mt_mat& src);
+
+		static mt_mat relu_derivate(const mt_mat& src, const vector<f64>& activated_params);
+
+		static mt_mat activate_derivative(const mt_mat& src, mt_Activate_Type activate_type, const vector<f64>& activated_params);
+
 	};
 }

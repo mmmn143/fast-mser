@@ -11,8 +11,15 @@ namespace basicmath {
 
 	class mt_auto_derivative {
 	public:
+
+		enum Stage {
+			Stage_Record_Computing,
+			Stage_Derivative,
+			Stage_Ignore,
+		};
+
 		mt_auto_derivative(i32 max_cache_size = 30) {
-			m_enable_math_operation = sys_true;
+			m_stage = Stage_Record_Computing;
 			m_max_cache_size = max_cache_size;
 		}
 
@@ -94,14 +101,15 @@ namespace basicmath {
 		void log(const mt_mat& res, const mt_mat& src, f64 base);
 		void abs(const mt_mat& res, const mt_mat& src);
 
-		/**
-		@param enable = sys_true indicates the auto_derivative instance will record the math operation in the derivative tree.
-		*/
-		void record_math_operation(b8 enable);
-
-		b8 math_operation_recorded() const; 
-
 		void reset();
+
+		void set_stage(Stage stage) {
+			m_stage = stage;
+		}
+
+		Stage stage() {
+			return m_stage;
+		}
 
 	protected:
 
@@ -123,9 +131,9 @@ namespace basicmath {
 
 		vector<mt_ad_tree_node*> m_nodes;
 		b8 m_computed_flag;
-		b8 m_enable_math_operation;
 		i32 m_max_cache_size;
 
 		vector<mt_auto_derivative**> m_self_references;  
+		Stage m_stage;
 	};
 }

@@ -258,16 +258,16 @@ namespace basicmath {
 
 	template<class T>
 	void write(basicsys::sys_strcombine& str, const mt_block_memory<T>& data) {
-		str<<L"[";
+		str<<"[";
 
 		for (i32 i = 0; i < data.m_element_number; ++i) {
 			str<<data.at(i);
 
 			if (i != data.m_element_number - 1) {
-				str<<L",";
+				str<<",";
 			}
 		}
 
-		str<<L"]";
+		str<<"]";
 	}
 }
