@@ -16,7 +16,10 @@ using namespace basicsys;
 
 static void set_config(img_mser_base* alg) {
 
-	//TextDetection
+	// Configuration TextDetection
+
+	// set_parallel_thread_number is only valid for fast mser v1 and v2.
+	alg->set_parallel_thread_number(4);
 
 	alg->set_duplicated_variation(0.1f);
 
@@ -26,7 +29,10 @@ static void set_config(img_mser_base* alg) {
 
 
 
-	// DetectorEval
+	// Configuration DetectorEval
+
+	// set_parallel_thread_number is only valid for fast mser v1 and v2.
+	alg->set_parallel_thread_number(4);
 
 	//alg->set_duplicated_variation(0.2f);
 
