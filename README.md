@@ -1,7 +1,14 @@
 # Fast MSER 
 
+## Future Work
+- Experiments w.r.t. different threads (1, 2, 4, 8, 16, 32 threads). We have a computer with 32-cores. The OS is Linux. Thus, we need to support our algorithms on Linux;
+
+- Improve the speed-up in MSER recognition, and further reduce the running memory of V1 and V2;
+
+- Compare Fast MSER to several deep learning based scene text methods in execution time aspect.
+
 ## News (2020/05/02)
-- We support our algorithms on MacOS (however, OpenMP is not supported well in MacOS)
+- We support our algorithms on MacOS (however, OpenMP is not supported well in MacOS);
 
 - Fast MSER V1 supports 1, 2, 4, 8, 16 and 32 threads. Fast MSER V2 supports 1, 4 and 32 threads.
 
@@ -61,7 +68,11 @@ Open all_projects.sln and build it, then you can test the comparison MSER algori
 
 #### OpenCV 3
 
+Please do not use OpenCV 4.
+
 #### CLion
+
+Using CMakeList.txt.
 
 ## FAQ
 If you have any questions about how to build this project, please tell me in 'Issues'.
