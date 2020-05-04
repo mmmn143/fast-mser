@@ -72,7 +72,7 @@ Please do not use OpenCV 4.
 
 #### CLion
 
-Using CMakeList.txt.
+Please use CMakeLists.txt.
 
 ## FAQ
 If you have any questions about how to build this project, please tell me in 'Issues'.
