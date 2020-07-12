@@ -7,12 +7,12 @@ using namespace basiclog;
 using namespace basicsys;
 
 static void print() {
-	basiclog_debug2(L"debug");
-	basiclog_info2(L"info");
+	basiclog_debug2("debug");
+	basiclog_info2("info");
 }
 
 static void test_file_logger() {
-	log_logger::init_logger(new log_file_logger(L""));
+	log_logger::init_logger(new log_file_logger(""));
 	print();
 }
 
